@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import xgboost as xgb
+import xgb
 import numpy as np
 from fpdf import FPDF
 from datetime import datetime
@@ -13,25 +13,20 @@ st.set_page_config(page_title="LABORATOIRE HOUBAD DOUAA", layout="wide")
 timezone_dz = pytz.timezone('Africa/Algiers')
 heure_algerie = datetime.now(timezone_dz).strftime("%d/%m/%Y %H:%M:%S")
 
-# --- DESIGN & TRANSPARENCE ---
-# URL directe de l'image pour éviter les erreurs d'affichage
+# --- DESIGN AJUSTÉ (ZONES DE SAISIE PLUS FONCÉES) ---
 IMAGE_URL = "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
 
 st.markdown(f"""
     <style>
+    /* Fond d'écran avec transparence subtile */
     .stApp {{
-        background: linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)), 
+        background: linear-gradient(rgba(255, 255, 255, 0.90), rgba(255, 255, 255, 0.90)), 
         url("{IMAGE_URL}");
         background-size: cover;
         background-attachment: fixed;
     }}
-    .main-container {{
-        background-color: white;
-        padding: 30px;
-        border-radius: 20px;
-        box-shadow: 0px 10px 30px rgba(0,0,0,0.1);
-        border: 2px solid #003366;
-    }}
+    
+    /* Titre Principal */
     .main-title {{ 
         color: #003366; 
         text-align: center; 
@@ -39,7 +34,22 @@ st.markdown(f"""
         border-bottom: 4px solid #cc0000;
         margin-bottom: 20px;
     }}
-    label {{ color: #001f3f !important; font-weight: bold !important; }}
+
+    /* Ajustement des zones de saisie (Inputs) pour être plus foncées */
+    input, select, textarea, [data-baseweb="select"] {{
+        background-color: #f0f2f6 !important; /* Gris clair pour contraste */
+        border: 2px solid #bdc3c7 !important; /* Bordure plus marquée */
+        color: #000000 !important;
+        border-radius: 8px !important;
+    }}
+
+    label {{ 
+        color: #001f3f !important; 
+        font-weight: bold !important; 
+        font-size: 15px !important;
+    }}
+
+    /* Bouton d'analyse */
     .stButton>button {{
         background-color: #cc0000 !important;
         color: white !important;
@@ -48,6 +58,7 @@ st.markdown(f"""
         width: 100%;
         border-radius: 12px;
         font-size: 18px !important;
+        box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -107,11 +118,10 @@ if submitted:
     
     st.markdown(f"<h2 style='text-align:center; color:white; background-color:{colors[res_idx]}; padding:15px; border-radius:10px;'>RÉSULTAT : {cats[res_idx]} ({risk_score:.1f}%)</h2>", unsafe_allow_html=True)
 
-    # --- PDF GÉNÉRATION (FORMAT DEMANDÉ) ---
+    # --- PDF GÉNÉRATION ---
     pdf = FPDF()
     pdf.add_page()
     
-    # Header
     pdf.set_font("Arial", 'B', 20)
     pdf.set_text_color(0, 51, 102)
     pdf.cell(190, 15, "BILAN DE SANTE CARDIAQUE IA", ln=True, align='C')
@@ -151,7 +161,7 @@ if submitted:
     pdf.set_font("Arial", 'B', 12)
     pdf.cell(190, 10, " 2. ANALYSE ET DECISION DE L'IA", ln=True, fill=True)
     
-    pdf.set_text_color(220, 0, 0) if res_idx == 2 else pdf.set_text_color(0, 0, 0)
+    pdf.set_text_color(0, 0, 0)
     pdf.set_font("Arial", 'B', 14)
     pdf.cell(190, 15, f" RESULTAT : {cats[res_idx]} ({risk_score:.1f}%)", border=1, ln=True, align='C')
     pdf.ln(10)
