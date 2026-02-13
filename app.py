@@ -6,49 +6,48 @@ from fpdf import FPDF
 from datetime import datetime
 import pytz
 
-# --- CONFIGURATION PAGE ---
+# --- CONFIGURATION ---
 st.set_page_config(page_title="LABORATOIRE HOUBAD DOUAA", layout="wide")
 
-# --- HEURE ALGERIE ---
+# Heure Algerie
 timezone_dz = pytz.timezone('Africa/Algiers')
 heure_algerie = datetime.now(timezone_dz).strftime("%d/%m/%Y %H:%M:%S")
 
-# --- DESIGN : IMAGE DE FOND & CONTRASTE ---
-# Note : Pour l'image, j'utilise un lien direct compatible pour le CSS
-IMAGE_URL = "https://thumbs.dreamstime.com/b/coeur-anatomique-tube-don-sang-enroul%C3%A9-compteur-laboratoire-en-acier-inoxydable-honorer-journ%C3%A9e-mondiale-382446848.jpg"
+# --- DESIGN & TRANSPARENCE ---
+# URL directe de l'image pour éviter les erreurs d'affichage
+IMAGE_URL = "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
 
 st.markdown(f"""
     <style>
     .stApp {{
-        background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), 
+        background: linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)), 
         url("{IMAGE_URL}");
         background-size: cover;
         background-attachment: fixed;
     }}
-    /* Bloc de formulaire très visible */
-    [data-testid="stVerticalBlock"] > div:nth-child(1) {{
-        background-color: rgba(255, 255, 255, 0.95);
+    .main-container {{
+        background-color: white;
         padding: 30px;
-        border-radius: 15px;
+        border-radius: 20px;
+        box-shadow: 0px 10px 30px rgba(0,0,0,0.1);
         border: 2px solid #003366;
     }}
     .main-title {{ 
-        color: #FFFFFF; 
+        color: #003366; 
         text-align: center; 
         font-family: 'Arial Black';
-        text-shadow: 3px 3px 5px #000000;
-        background-color: rgba(0, 51, 102, 0.7);
-        padding: 10px;
-        border-radius: 10px;
+        border-bottom: 4px solid #cc0000;
+        margin-bottom: 20px;
     }}
-    label {{ color: #001f3f !important; font-weight: bold !important; font-size: 16px !important; }}
+    label {{ color: #001f3f !important; font-weight: bold !important; }}
     .stButton>button {{
         background-color: #cc0000 !important;
         color: white !important;
         font-weight: bold !important;
-        height: 4em;
+        height: 3.5em;
         width: 100%;
-        border-radius: 10px;
+        border-radius: 12px;
+        font-size: 18px !important;
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -66,37 +65,36 @@ def train_model():
 
 model, feat_cols = train_model()
 
-st.markdown("<h1 class='main-title'>🔬 LABORATOIRE HOUBAD DOUAA - BILAN CARDIAQUE IA</h1>", unsafe_allow_html=True)
-st.write(f"🕒 **HEURE LOCALE (ALGERIE) : {heure_algerie}**")
+st.markdown("<h1 class='main-title'>BILAN DE SANTÉ CARDIAQUE IA</h1>", unsafe_allow_html=True)
+st.write(f"📍 **Laboratoire Houbad Douaa - Algerie** | 🕒 {heure_algerie}")
 
 # --- FORMULAIRE ---
-with st.form("form_labo"):
+with st.form("main_form"):
     c1, c2, c3 = st.columns(3)
     with c1:
-        st.subheader("👤 Infos Personnelles")
+        st.subheader("👤 Identité")
         nom = st.text_input("NOM")
-        prenom = st.text_input("PRENOM")
-        age = st.number_input("AGE", 10, 110, 45)
-        family = st.radio("HEREDITE CARDIAQUE", ["Non", "Oui"])
+        prenom = st.text_input("PRÉNOM")
+        age = st.number_input("ÂGE", 10, 110, 45)
+        family = st.radio("HÉRÉDITÉ CARDIAQUE", ["Non", "Oui"])
     with c2:
-        st.subheader("🩺 Parametres Cliniques")
+        st.subheader("🩺 Clinique")
         sys_bp = st.number_input("TENSION SYSTOLIQUE", 80, 220, 120)
         dia_bp = st.number_input("TENSION DIASTOLIQUE", 40, 140, 80)
-        chol = st.number_input("CHOLESTEROL (mg/dL)", 100, 450, 200)
+        chol = st.number_input("CHOLESTÉROL (mg/dL)", 100, 450, 200)
         pulse = st.number_input("POULS (BPM)", 40, 160, 72)
     with c3:
         st.subheader("🏃 Mode de Vie")
-        smoke = st.selectbox("TABAC", ["Jamais", "Ex-fumeur", "Fumeur"])
-        steps = st.number_input("PAS / JOUR", 0, 30000, 5000)
-        sleep = st.slider("SOMMEIL (Heures)", 3, 12, 7)
+        smoke = st.selectbox("TABAGISME", ["Jamais", "Ex-fumeur", "Fumeur"])
+        steps = st.number_input("STEPS / JOUR", 0, 30000, 5000)
+        sleep = st.slider("SOMMEIL (H/nuit)", 3, 12, 7)
         stress = st.slider("STRESS (1-10)", 1, 10, 5)
-        alcohol = st.number_input("ALCOOL (verres/sem)", 0, 50, 0)
-        diet = st.slider("DIETE (1-10)", 1, 10, 7)
+        alcohol = st.number_input("ALCOOL (v/sem)", 0, 50, 0)
+        diet = st.slider("ALIMENTATION (1-10)", 1, 10, 7)
 
-    submitted = st.form_submit_button("ANALYSER ET GENERER LE RAPPORT")
+    submitted = st.form_submit_button("ANALYSER ET GÉNÉRER RAPPORT")
 
 if submitted:
-    # Prediction
     m_smoke = {'Jamais': 0, 'Ex-fumeur': 1, 'Fumeur': 2}
     input_data = pd.DataFrame([[age, 25.0, sys_bp, dia_bp, chol, pulse, m_smoke[smoke], steps, stress, 3, sleep, (1 if family=="Oui" else 0), diet, alcohol]], columns=feat_cols)
     
@@ -104,79 +102,81 @@ if submitted:
     risk_score = np.max(proba) * 100
     res_idx = model.predict(input_data)[0]
     
-    cats = ["RISQUE FAIBLE", "RISQUE MODERE", "RISQUE ELEVE"]
-    colors_hex = ["#00FF00", "#FFFF00", "#FF0000"]
+    cats = ["RISQUE FAIBLE", "RISQUE MODÉRÉ", "RISQUE ÉLEVÉ"]
+    colors = ["#28a745", "#ffc107", "#dc3545"]
     
-    st.markdown(f"<h2 style='text-align:center; color:{colors_hex[res_idx]}; background-color:rgba(0,0,0,0.7); padding:10px;'>RESULTAT : {cats[res_idx]} ({risk_score:.1f}%)</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='text-align:center; color:white; background-color:{colors[res_idx]}; padding:15px; border-radius:10px;'>RÉSULTAT : {cats[res_idx]} ({risk_score:.1f}%)</h2>", unsafe_allow_html=True)
 
-    # --- GENERATION PDF PROFESSIONNEL ---
+    # --- PDF GÉNÉRATION (FORMAT DEMANDÉ) ---
     pdf = FPDF()
     pdf.add_page()
     
-    # Filigrane
-    pdf.set_font("Arial", 'B', 40)
-    pdf.set_text_color(240, 240, 240)
-    pdf.rotate(45, 100, 100)
-    pdf.text(20, 190, "LABORATOIRE HOUBAD DOUAA")
-    pdf.rotate(0)
-
-    # HEADER
-    pdf.set_text_color(0, 51, 102)
+    # Header
     pdf.set_font("Arial", 'B', 20)
-    pdf.cell(190, 15, "RAPPORT D'ANALYSE CARDIAQUE - IA", ln=True, align='C')
+    pdf.set_text_color(0, 51, 102)
+    pdf.cell(190, 15, "BILAN DE SANTE CARDIAQUE IA", ln=True, align='C')
     pdf.set_font("Arial", 'I', 10)
-    pdf.cell(190, 10, f"Date: {heure_algerie} | Algerie", ln=True, align='C')
+    pdf.cell(190, 10, f"Laboratoire Houbad Douaa - Algerie | {heure_algerie}", ln=True, align='C')
     pdf.ln(5)
 
-    # PARTIE 1 : INFORMATIONS PERSONNELLES & PARAMETRES
-    pdf.set_fill_color(230, 240, 255)
+    # PARTIE 1
+    pdf.set_fill_color(0, 51, 102)
+    pdf.set_text_color(255, 255, 255)
     pdf.set_font("Arial", 'B', 12)
-    pdf.cell(190, 10, " 1. INFORMATIONS DU PATIENT ET CONSTANTES", ln=True, fill=True)
-    pdf.set_font("Arial", '', 11)
-    pdf.set_text_color(0, 0, 0)
+    pdf.cell(190, 10, " 1. DONNEES DU PATIENT ET MODE DE VIE", ln=True, fill=True)
     
-    col_w = 95
-    pdf.cell(col_w, 10, f" Nom complet: {nom.upper()} {prenom.upper()}", border=1)
-    pdf.cell(col_w, 10, f" Age: {age} ans", border=1, ln=True)
-    pdf.cell(col_w, 10, f" Tension: {sys_bp}/{dia_bp} mmHg", border=1)
-    pdf.cell(col_w, 10, f" Cholesterol: {chol} mg/dL", border=1, ln=True)
-    pdf.cell(col_w, 10, f" Tabagisme: {smoke}", border=1)
-    pdf.cell(col_w, 10, f" Pouls: {pulse} BPM", border=1, ln=True)
-    pdf.cell(col_w, 10, f" Pas/jour: {steps}", border=1)
-    pdf.cell(col_w, 10, f" Stress: {stress}/10", border=1, ln=True)
-    pdf.ln(5)
+    pdf.set_text_color(0, 0, 0)
+    pdf.set_font("Arial", '', 10)
+    data = [
+        ["NOM", nom.upper(), "ALCOOL", f"{alcohol} v/sem"],
+        ["PRENOM", prenom.upper(), "PAS / JOUR", f"{steps}"],
+        ["AGE", f"{age} ans", "SOMMEIL", f"{sleep} h/nuit"],
+        ["TENSION", f"{sys_bp}/{dia_bp}", "STRESS", f"{stress}/10"],
+        ["CHOLESTEROL", f"{chol} mg/dL", "DIETE", f"{diet}/10"],
+        ["POULS", f"{pulse} BPM", "TABAC", smoke],
+        ["HEREDITE", family, "", ""]
+    ]
+    
+    for row in data:
+        pdf.cell(45, 8, row[0], border=1)
+        pdf.cell(50, 8, row[1], border=1)
+        pdf.cell(45, 8, row[2], border=1)
+        pdf.cell(50, 8, row[3], border=1, ln=True)
+    
+    pdf.ln(10)
 
-    # PARTIE 2 : DECISION DE L'IA
+    # PARTIE 2
+    pdf.set_fill_color(0, 51, 102)
+    pdf.set_text_color(255, 255, 255)
     pdf.set_font("Arial", 'B', 12)
-    pdf.set_fill_color(255, 230, 230)
     pdf.cell(190, 10, " 2. ANALYSE ET DECISION DE L'IA", ln=True, fill=True)
+    
+    pdf.set_text_color(220, 0, 0) if res_idx == 2 else pdf.set_text_color(0, 0, 0)
     pdf.set_font("Arial", 'B', 14)
-    if res_idx == 0: pdf.set_text_color(0, 128, 0)
-    elif res_idx == 1: pdf.set_text_color(200, 150, 0)
-    else: pdf.set_text_color(200, 0, 0)
-    
-    pdf.cell(190, 15, f" VERDICT : {cats[res_idx]} | TAUX DE CERTITUDE : {risk_score:.1f}%", border=1, ln=True, align='C')
-    pdf.ln(5)
+    pdf.cell(190, 15, f" RESULTAT : {cats[res_idx]} ({risk_score:.1f}%)", border=1, ln=True, align='C')
+    pdf.ln(10)
 
-    # PARTIE 3 : RECOMMENDATIONS MEDICALES
-    pdf.set_text_color(0, 0, 0)
+    # PARTIE 3
+    pdf.set_fill_color(0, 51, 102)
+    pdf.set_text_color(255, 255, 255)
     pdf.set_font("Arial", 'B', 12)
-    pdf.set_fill_color(230, 255, 230)
     pdf.cell(190, 10, " 3. RECOMMENDATIONS MEDICALES", ln=True, fill=True)
-    pdf.set_font("Arial", '', 11)
     
+    pdf.set_text_color(0, 0, 0)
+    pdf.set_font("Arial", '', 11)
     if res_idx == 0:
-        reco = "PROFIL SAIN. Maintenez votre mode de vie actuel. Continuez une activite physique de 30 min/jour. Gardez une alimentation riche en fibres et faible en sel. Un controle annuel est suffisant."
+        reco = "Profil optimal. Maintenez une alimentation riche en fibres et pratiquez une activite physique reguliere (30 min/jour). Bilan annuel conseille."
     elif res_idx == 1:
-        reco = "VIGILANCE. Il est imperatif de modifier votre hygene de vie. Reduisez le sucre et les graisses saturees. Augmentez votre activite physique. Pratiquez des exercices de respiration pour gerer le stress. Prenez rendez-vous pour un bilan lipidique complet."
+        reco = "Vigilance requise. Reduisez la consommation de sel et de graisses saturees. Augmentez votre activite physique. Un bilan sanguin complet est recommande."
     else:
-        reco = "ALERTE CRITIQUE. Vous devez consulter un CARDIOLOGUE d'urgence. Arretez tout effort physique intense. Surveillez votre tension arterielle matin et soir. Ce resultat indique une surcharge cardiovasculaire necessitant une expertise clinique immediate."
+        reco = "ALERTE : Risque eleve detecte. Une consultation chez un cardiologue est imperatve d urgence. Arretez tout effort physique intense."
     
     pdf.multi_cell(190, 10, reco, border=1)
     
-    pdf.ln(10)
-    pdf.set_font("Arial", 'I', 9)
-    pdf.cell(190, 10, "Document genere electroniquement par le systeme expert Houbad Douaa.", align='C')
+    # FIN
+    pdf.ln(20)
+    pdf.set_font("Arial", 'I', 10)
+    pdf.cell(190, 10, "Document genere electroniquement par le systeme expert Houbad Douaa", align='C')
 
     pdf_bytes = pdf.output(dest='S').encode('latin-1', 'ignore')
-    st.download_button("📩 TELECHARGER LE RAPPORT PDF OFFICIEL", data=pdf_bytes, file_name=f"Rapport_Houbad_{nom}.pdf", mime="application/pdf")
+    st.download_button("📩 TÉLÉCHARGER LE BILAN PDF", data=pdf_bytes, file_name=f"Bilan_Houbad_{nom}.pdf")
