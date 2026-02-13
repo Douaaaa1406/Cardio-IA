@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import xgb
+import xgboost as xgb
 import numpy as np
 from fpdf import FPDF
 from datetime import datetime
