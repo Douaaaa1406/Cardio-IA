@@ -2,119 +2,125 @@ import streamlit as st
 import pandas as pd
 import xgboost as xgb
 import matplotlib.pyplot as plt
-import seaborn as sns
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, cohen_kappa_score, confusion_matrix
+from sklearn.metrics import accuracy_score
 from fpdf import FPDF
 from datetime import datetime
 import pytz
-import io
 
 # Configuration de la page
-st.set_page_config(page_title="LABORATOIRE HOUBAD DOUAA", layout="wide")
+st.set_page_config(page_title="LABORATOIRE HOUBAD DOUAA", page_icon="🔬", layout="wide")
 
-# --- CHARGEMENT ET ENTRAÎNEMENT ---
 @st.cache_resource
 def train_model():
-    # Chargement du fichier que tu as mis sur GitHub
     df = pd.read_csv("cardiovascular_risk_numeric.csv")
     mapping = {'Never': 0, 'Former': 1, 'Current': 2}
     df['smoking_status'] = df['smoking_status'].map(mapping)
-    
     X = df.drop(['Patient_ID', 'heart_disease_risk_score', 'risk_category'], axis=1)
     y = df['risk_category']
-    
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    
     model = xgb.XGBClassifier(n_estimators=100, max_depth=5, learning_rate=0.1)
     model.fit(X_train, y_train)
-    
-    y_pred = model.predict(X_test)
-    acc = accuracy_score(y_test, y_pred)
-    kappa = cohen_kappa_score(y_test, y_pred)
-    cm = confusion_matrix(y_test, y_pred)
-    
-    return model, X.columns, acc, kappa, cm
+    acc = accuracy_score(y_test, model.predict(X_test))
+    return model, X.columns, acc
 
-model, feat_cols, acc, kappa, cm = train_model()
+model, feat_cols, acc = train_model()
 
-# --- INTERFACE ---
 st.markdown("<h1 style='text-align: center; color: #003366;'>🔬 LABORATOIRE HOUBAD DOUAA</h1>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center;'>Système Expert de Prédiction Cardiaque (XGBoost)</h3>", unsafe_allow_html=True)
+st.write(f"**Fiabilite du systeme : {acc*100:.2f}%**")
 
-# Barre latérale pour la fiabilité
-with st.sidebar:
-    st.header("📊 Fiabilité du Modèle")
-    st.metric("Précision Globale", f"{acc*100:.2f}%")
-    st.metric("Score Kappa", f"{kappa:.3f}")
-    
-    st.write("---")
-    st.write("### Importance des Paramètres")
-    fig_imp, ax_imp = plt.subplots()
-    importances = model.feature_importances_
-    pd.Series(importances, index=feat_cols).sort_values().plot(kind='barh', color='#0077b6', ax=ax_imp)
-    st.pyplot(fig_imp)
-
-# Formulaire de saisie
 with st.form("main_form"):
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
     with col1:
-        nom = st.text_input("Nom du Patient")
-        prenom = st.text_input("Prénom du Patient")
-        age = st.number_input("Âge", 18, 100, 45)
-        bmi = st.number_input("IMC (BMI)", 10.0, 50.0, 25.0)
-        smoke = st.selectbox("Statut Tabagique", ["Jamais", "Ex-fumeur", "Fumeur"])
+        st.subheader("👤 Identite")
+        nom = st.text_input("Nom")
+        prenom = st.text_input("Prenom")
+        age = st.number_input("Age", 18, 100, 45)
+        family = st.radio("Heredite Cardiaque", ["Non", "Oui"])
     with col2:
-        sys_bp = st.number_input("Tension Systolique (mmHg)", 80, 200, 120)
-        dia_bp = st.number_input("Tension Diastolique (mmHg)", 40, 130, 80)
-        chol = st.number_input("Cholestérol (mg/dL)", 100, 400, 190)
-        family = st.radio("Antécédents Familiaux", ["Non", "Oui"])
-        stress = st.slider("Niveau de Stress (1-10)", 1, 10, 5)
+        st.subheader("🩺 Constantes")
+        sys_bp = st.number_input("Tension Systolique", 80, 200, 120)
+        dia_bp = st.number_input("Tension Diastolique", 40, 130, 80)
+        chol = st.number_input("Cholesterol", 100, 400, 200)
+        pulse = st.number_input("Pouls (BPM)", 40, 150, 72)
+    with col3:
+        st.subheader("🏃 Mode de Vie")
+        smoke = st.selectbox("Tabac", ["Jamais", "Ex-fumeur", "Fumeur"])
+        steps = st.number_input("Pas par jour", 0, 30000, 7000)
+        sleep = st.slider("Sommeil (h/nuit)", 4, 12, 7)
+        stress = st.slider("Stress (1-10)", 1, 10, 5)
 
-    submitted = st.form_submit_button("🔍 LANCER L'ANALYSE IA")
+    submitted = st.form_submit_button("🔍 ANALYSER ET GENERER LE RAPPORT")
 
 if submitted:
-    # Préparation des données pour XGBoost
-    mapping_smoke = {'Jamais': 0, 'Ex-fumeur': 1, 'Fumeur': 2}
-    # On complète avec des valeurs moyennes pour les champs restants
-    input_df = pd.DataFrame([[
-        age, bmi, sys_bp, dia_bp, chol, 72, mapping_smoke[smoke], 
-        7000, stress, 3, 7, (1 if family == "Oui" else 0), 7, 0
-    ]], columns=feat_cols)
+    m_smoke = {'Jamais': 0, 'Ex-fumeur': 1, 'Fumeur': 2}
+    # Prédiction (complétée avec valeurs par défaut pour les champs cachés)
+    input_data = pd.DataFrame([[age, 25.0, sys_bp, dia_bp, chol, pulse, m_smoke[smoke], steps, stress, 3, sleep, (1 if family=="Oui" else 0), 7, 0]], columns=feat_cols)
+    res_idx = model.predict(input_data)[0]
     
-    res_idx = model.predict(input_df)[0]
-    categories = ["✅ RISQUE FAIBLE", "⚠️ RISQUE MODÉRÉ", "🚨 RISQUE ÉLEVÉ"]
-    resultat = categories[res_idx]
+    cats = ["RISQUE FAIBLE", "RISQUE MODERE", "RISQUE ELEVE"]
+    colors = ["#28a745", "#ffc107", "#dc3545"] # Vert, Jaune, Rouge
+    instructions = [
+        "Continuez ce mode de vie sain.",
+        "Essayer de corriger votre mode de vie (alimentation, sport).",
+        "VEUILLEZ VISITER UN CARDIOLOGUE LE PLUS TOT POSSIBLE."
+    ]
     
-    st.success(f"Résultat de l'IA : {resultat}")
+    res_text = cats[res_idx]
+    instr_text = instructions[res_idx]
 
-    # GÉNÉRATION DU PDF
+    st.markdown(f"<h2 style='text-align:center; color:{colors[res_idx]};'>{res_text}</h2>", unsafe_allow_html=True)
+    st.info(instr_text)
+
+    # --- GENERATION DU PDF PROFESSIONNEL ---
     pdf = FPDF()
     pdf.add_page()
     
-    # Filigrane
-    pdf.set_font("Arial", 'B', 30)
+    # 1. Filigrane (Watermark)
+    pdf.set_font("Arial", 'B', 35)
     pdf.set_text_color(240, 240, 240)
     pdf.rotate(45, 100, 100)
-    pdf.text(20, 190, "LABORATOIRE HOUBAD DOUAA")
+    pdf.text(15, 190, "LABORATOIRE HOUBAD DOUAA - IA")
     pdf.rotate(0)
-    
-    # Contenu
-    pdf.set_text_color(0, 51, 102)
-    pdf.set_font("Arial", 'B', 16)
-    pdf.cell(190, 10, "RAPPORT MEDICAL DE PREDICTION CARDIAQUE", ln=True, align='C')
+
+    # 2. Logo et Entête
+    pdf.set_font("Arial", 'B', 20)
+    pdf.set_text_color(0, 51, 102) # Bleu Marine
+    pdf.cell(190, 15, "LABORATOIRE HOUBAD DOUAA", ln=True, align='C')
+    pdf.set_font("Arial", 'I', 10)
+    pdf.cell(190, 5, f"Date de l'analyse : {datetime.now().strftime('%d/%m/%Y %H:%M')}", ln=True, align='C')
     pdf.ln(10)
+
+    # 3. Informations Patient (Cadre Bleu)
+    pdf.set_fill_color(230, 240, 250)
+    pdf.set_font("Arial", 'B', 12)
+    pdf.cell(190, 10, f" RAPPORT DU PATIENT : {nom.upper()} {prenom.upper()}", ln=True, fill=True)
     
-    pdf.set_font("Arial", '', 12)
     pdf.set_text_color(0, 0, 0)
-    pdf.cell(100, 10, f"Patient : {nom.upper()} {prenom.upper()}", ln=True)
-    pdf.cell(100, 10, f"Date : {datetime.now().strftime('%d/%m/%Y')}", ln=True)
+    pdf.set_font("Arial", '', 11)
+    pdf.cell(95, 8, f" Age : {age} ans", border=1)
+    pdf.cell(95, 8, f" Heredite : {family}", border=1, ln=True)
+    pdf.cell(95, 8, f" Tension : {sys_bp}/{dia_bp} mmHg", border=1)
+    pdf.cell(95, 8, f" Cholesterol : {chol} mg/dL", border=1, ln=True)
+    pdf.cell(95, 8, f" Tabagisme : {smoke}", border=1)
+    pdf.cell(95, 8, f" Pouls : {pulse} BPM", border=1, ln=True)
+    pdf.ln(10)
+
+    # 4. RESULTAT IA (Couleur selon le risque)
+    if res_idx == 0: pdf.set_text_color(40, 167, 69) # Vert
+    elif res_idx == 1: pdf.set_text_color(210, 150, 0) # Orange
+    else: pdf.set_text_color(220, 53, 69) # Rouge
+    
+    pdf.set_font("Arial", 'B', 16)
+    pdf.cell(190, 15, f"RESULTAT IA : {res_text}", border=1, ln=True, align='C')
+    
+    # 5. Instructions Médicales
     pdf.ln(5)
-    
-    pdf.set_font("Arial", 'B', 14)
-    pdf.cell(190, 12, f"VERDICT IA : {resultat}", border=1, ln=True, align='C')
-    
-    pdf_output = f"Rapport_{nom}.pdf"
-    pdf_bytes = pdf.output(dest='S').encode('latin-1')
-    
-    st.download_button("📩 Télécharger le Rapport Médical PDF", data=pdf_bytes, file_name=pdf_output, mime="application/pdf")
+    pdf.set_text_color(0, 0, 0)
+    pdf.set_font("Arial", 'B', 12)
+    pdf.cell(190, 10, "INSTRUCTIONS ET CONSEILS :", ln=True)
+    pdf.set_font("Arial", '', 12)
+    pdf.multi_cell(190, 10, instr_text, border=1)
+
+    pdf_output = pdf.output(dest='S').encode('latin-1')
+    st.download_button("📩 TELECHARGER LE RAPPORT PDF OFFICIEL", data=pdf_output, file_name=f"Rapport_{nom}.pdf", mime="application/pdf")
