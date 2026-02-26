@@ -7,7 +7,7 @@ from datetime import datetime
 import pytz
 
 # --- CONFIGURATION ---
-st.set_page_config(page_title="LABORATOIRE HOUBAD DOUAA", layout="wide")
+st.set_page_config(page_title="LABORATOIRE Cardiologie", layout="wide")
 
 # Heure Algerie
 timezone_dz = pytz.timezone('Africa/Algiers')
@@ -86,7 +86,7 @@ def train_model():
 model, feat_cols = train_model()
 
 st.markdown("<h1 class='main-title'>BILAN DE SANTÉ CARDIAQUE IA</h1>", unsafe_allow_html=True)
-st.write(f"📍 **Laboratoire Houbad Douaa - Algerie** | 🕒 **{heure_algerie}**")
+st.write(f"📍 **Laboratoire de cardiologie M1 EMB  - Algerie** | 🕒 **{heure_algerie}**")
 
 with st.form("main_form"):
     c1, c2, c3 = st.columns(3)
