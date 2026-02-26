@@ -14,7 +14,7 @@ timezone_dz = pytz.timezone('Africa/Algiers')
 heure_algerie = datetime.now(timezone_dz).strftime("%d/%m/%Y %H:%M:%S")
 
 # --- DESIGN "SOFT GRAY" (NI CLAIR NI SOMBRE) ---
-IMAGE_URL = "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+IMAGE_URL = "https://cddamel.com/wp-content/uploads/04-Cardio-Blog-1280x800-1.webp"
 
 st.markdown(f"""
     <style>
