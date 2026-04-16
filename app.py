@@ -6,9 +6,17 @@ from fpdf import FPDF
 from datetime import datetime
 import pytz
 import time
+import unicodedata
 
 # --- CONFIGURATION ---
 st.set_page_config(page_title="CardioIA Pro", layout="wide", page_icon="🫀")
+
+# --- HELPER: strip accents for PDF ---
+def safe(text):
+    """Convert any string to latin-1 safe ASCII for FPDF."""
+    text = str(text)
+    text = unicodedata.normalize('NFKD', text)
+    return text.encode('latin-1', 'ignore').decode('latin-1')
 
 # --- LIGHT ELEGANT THEME ---
 st.markdown("""
@@ -84,14 +92,14 @@ st.markdown("""
         box-shadow: 0 10px 50px rgba(11,31,58,0.22);
     }
     .main-header::before {
-        content: '♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥';
+        content: '\u2665  \u2661  \u2665  \u2661  \u2665  \u2661  \u2665  \u2661  \u2665  \u2661  \u2665  \u2661  \u2665  \u2661';
         position: absolute;
         top: 9px; left: 0; right: 0;
         font-size: 10px; color: rgba(255,255,255,0.07);
         letter-spacing: 6px; text-align: center; font-family: serif;
     }
     .main-header::after {
-        content: '♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡';
+        content: '\u2661  \u2665  \u2661  \u2665  \u2661  \u2665  \u2661  \u2665  \u2661  \u2665  \u2661  \u2665  \u2661  \u2665';
         position: absolute;
         bottom: 9px; left: 0; right: 0;
         font-size: 10px; color: rgba(255,255,255,0.07);
@@ -194,7 +202,7 @@ st.markdown("""
         margin-bottom: 16px;
         display: flex; align-items: center; gap: 8px;
     }
-    .section-label::before { content: '♥'; color: var(--accent); font-size: 11px; }
+    .section-label::before { content: '\u2665'; color: var(--accent); font-size: 11px; }
 
     /* INPUTS */
     input[type="number"], input[type="text"],
@@ -333,18 +341,18 @@ st.markdown("""
     </style>
 
     <div class="hearts-bg">
-        <div class="heart-float">♥</div>
-        <div class="heart-float">♡</div>
-        <div class="heart-float">♥</div>
-        <div class="heart-float">♡</div>
-        <div class="heart-float">♥</div>
-        <div class="heart-float">♡</div>
-        <div class="heart-float">♥</div>
-        <div class="heart-float">♡</div>
-        <div class="heart-float">♥</div>
-        <div class="heart-float">♡</div>
-        <div class="heart-float">♥</div>
-        <div class="heart-float">♡</div>
+        <div class="heart-float">&#9829;</div>
+        <div class="heart-float">&#9825;</div>
+        <div class="heart-float">&#9829;</div>
+        <div class="heart-float">&#9825;</div>
+        <div class="heart-float">&#9829;</div>
+        <div class="heart-float">&#9825;</div>
+        <div class="heart-float">&#9829;</div>
+        <div class="heart-float">&#9825;</div>
+        <div class="heart-float">&#9829;</div>
+        <div class="heart-float">&#9825;</div>
+        <div class="heart-float">&#9829;</div>
+        <div class="heart-float">&#9825;</div>
     </div>
 """, unsafe_allow_html=True)
 
@@ -353,14 +361,14 @@ st.markdown("""
 st.markdown("""
 <div class="main-header">
     <div class="header-title">
-        <span class="beat-heart">🫀</span>&nbsp; CardioIA Pro &nbsp;<span class="beat-heart">🫀</span>
+        <span class="beat-heart">&#129706;</span>&nbsp; CardioIA Pro &nbsp;<span class="beat-heart">&#129706;</span>
     </div>
     <div class="header-subtitle">Plateforme de Diagnostic Cardiaque par Intelligence Artificielle</div>
 </div>
 """, unsafe_allow_html=True)
 
 
-# ── LIVE CLOCK (updates every second via st.rerun) ──
+# ── LIVE CLOCK ──
 clock_ph = st.empty()
 
 def show_clock():
@@ -371,10 +379,10 @@ def show_clock():
     clock_ph.markdown(f"""
     <div class="clock-bar">
         <div class="clock-left">
-            <span class="clock-dot"></span>Heure Algérie — En Direct
+            <span class="clock-dot"></span>Heure Algerie &mdash; En Direct
         </div>
         <div class="clock-time">{time_str}</div>
-        <div class="clock-right">📍 {date_str}</div>
+        <div class="clock-right">&#128205; {date_str}</div>
     </div>
     """, unsafe_allow_html=True)
     return now
@@ -400,28 +408,28 @@ model, feat_cols = train_model()
 with st.form("main_form"):
     c1, c2, c3 = st.columns(3)
     with c1:
-        st.markdown('<div class="section-label">Identité Patient</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-label">Identite Patient</div>', unsafe_allow_html=True)
         nom    = st.text_input("Nom")
-        prenom = st.text_input("Prénom")
-        age    = st.number_input("Âge (ans)", 10, 110, 45)
-        family = st.radio("Hérédité Cardiaque", ["Non", "Oui"])
+        prenom = st.text_input("Prenom")
+        age    = st.number_input("Age (ans)", 10, 110, 45)
+        family = st.radio("Heredite Cardiaque", ["Non", "Oui"])
     with c2:
-        st.markdown('<div class="section-label">Données Cliniques</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-label">Donnees Cliniques</div>', unsafe_allow_html=True)
         sys_bp = st.number_input("Tension Systolique (mmHg)", 80, 220, 120)
         dia_bp = st.number_input("Tension Diastolique (mmHg)", 40, 140, 80)
-        chol   = st.number_input("Cholestérol (mg/dL)", 100, 450, 200)
+        chol   = st.number_input("Cholesterol (mg/dL)", 100, 450, 200)
         pulse  = st.number_input("Pouls (BPM)", 40, 160, 72)
     with c3:
         st.markdown('<div class="section-label">Mode de Vie</div>', unsafe_allow_html=True)
         smoke   = st.selectbox("Tabagisme", ["Jamais", "Ex-fumeur", "Fumeur"])
         steps   = st.number_input("Pas / Jour", 0, 30000, 5000)
         sleep   = st.slider("Sommeil (H/nuit)", 3, 12, 7)
-        stress  = st.slider("Niveau de Stress (1–10)", 1, 10, 5)
+        stress  = st.slider("Niveau de Stress (1-10)", 1, 10, 5)
         alcohol = st.number_input("Alcool (verres/sem.)", 0, 50, 0)
-        diet    = st.slider("Qualité Alimentaire (1–10)", 1, 10, 7)
+        diet    = st.slider("Qualite Alimentaire (1-10)", 1, 10, 7)
 
     st.markdown("<br>", unsafe_allow_html=True)
-    submitted = st.form_submit_button("♥  Lancer l'Analyse IA — Générer le Bilan Cardiaque")
+    submitted = st.form_submit_button("Lancer l'Analyse IA - Generer le Bilan Cardiaque")
 
 
 # ── RESULTS ──
@@ -436,17 +444,17 @@ if submitted:
     risk_score = np.max(proba) * 100
     res_idx    = model.predict(input_data)[0]
 
-    cats   = ["RISQUE FAIBLE", "RISQUE MODÉRÉ", "RISQUE ÉLEVÉ"]
+    cats   = ["RISQUE FAIBLE", "RISQUE MODERE", "RISQUE ELEVE"]
     cls    = ["result-low", "result-medium", "result-high"]
     colors = ["#28C76F", "#E6A000", "#C8102E"]
-    emojis = ["✅", "⚠️", "🚨"]
+    emojis = ["&#9989;", "&#9888;", "&#128680;"]
 
     st.markdown(f"""
     <div class="result-wrap {cls[res_idx]}">
         <div style="font-size:2.8rem;margin-bottom:8px;">{emojis[res_idx]}</div>
         <div class="result-main-label" style="color:{colors[res_idx]};">{cats[res_idx]}</div>
         <div class="result-score-text" style="color:{colors[res_idx]};">Score de risque IA : {risk_score:.1f}%</div>
-        <div class="result-patient">Patient : {prenom.capitalize()} {nom.upper()} &nbsp;♥&nbsp; Âge : {age} ans</div>
+        <div class="result-patient">Patient : {safe(prenom).capitalize()} {safe(nom).upper()} &nbsp;&#9829;&nbsp; Age : {age} ans</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -456,19 +464,26 @@ if submitted:
     heure_pdf = now.strftime("%d/%m/%Y  %H:%M:%S")
     ref_num   = f"CIA-{now.strftime('%Y%m%d%H%M%S')}"
 
+    # Safe versions for PDF (latin-1 only)
+    nom_pdf    = safe(nom).upper()
+    prenom_pdf = safe(prenom).upper()
+    smoke_pdf  = safe(smoke)
+    family_pdf = safe(family)
+
+    cats_pdf = ["RISQUE FAIBLE", "RISQUE MODERE", "RISQUE ELEVE"]
+
     pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=18)
 
     # ── TOP BAND ──
-    pdf.set_fill_color(11, 31, 58)         # navy
+    pdf.set_fill_color(11, 31, 58)
     pdf.rect(0, 0, 210, 50, 'F')
-    pdf.set_fill_color(46, 109, 164)       # blue stripe
+    pdf.set_fill_color(46, 109, 164)
     pdf.rect(0, 50, 210, 3.5, 'F')
-    pdf.set_fill_color(184, 151, 42)       # gold line
+    pdf.set_fill_color(184, 151, 42)
     pdf.rect(0, 53.5, 210, 0.8, 'F')
 
-    # Title in band
     pdf.set_y(8)
     pdf.set_font("Arial", 'B', 23)
     pdf.set_text_color(255, 255, 255)
@@ -503,38 +518,46 @@ if submitted:
 
     def data_row(l1, v1, l2="", v2="", shade=False):
         y = pdf.get_y()
-        pdf.set_fill_color(232, 241, 252) if shade else pdf.set_fill_color(244, 248, 254)
+        if shade:
+            pdf.set_fill_color(232, 241, 252)
+        else:
+            pdf.set_fill_color(244, 248, 254)
         pdf.set_draw_color(210, 222, 238)
         pdf.set_line_width(0.15)
         pdf.rect(10, y, 190, 9, 'FD')
-        pdf.set_font("Arial", '', 8.5);  pdf.set_text_color(80, 100, 130)
-        pdf.set_x(14);  pdf.cell(42, 9, l1)
-        pdf.set_font("Arial", 'B', 8.5); pdf.set_text_color(11, 31, 58)
-        pdf.cell(48, 9, str(v1))
+        pdf.set_font("Arial", '', 8.5)
+        pdf.set_text_color(80, 100, 130)
+        pdf.set_x(14)
+        pdf.cell(42, 9, safe(l1))
+        pdf.set_font("Arial", 'B', 8.5)
+        pdf.set_text_color(11, 31, 58)
+        pdf.cell(48, 9, safe(str(v1)))
         if l2:
-            pdf.set_font("Arial", '', 8.5);  pdf.set_text_color(80, 100, 130)
-            pdf.cell(42, 9, l2)
-            pdf.set_font("Arial", 'B', 8.5); pdf.set_text_color(11, 31, 58)
-            pdf.cell(48, 9, str(v2))
+            pdf.set_font("Arial", '', 8.5)
+            pdf.set_text_color(80, 100, 130)
+            pdf.cell(42, 9, safe(l2))
+            pdf.set_font("Arial", 'B', 8.5)
+            pdf.set_text_color(11, 31, 58)
+            pdf.cell(48, 9, safe(str(v2)))
         pdf.ln(9)
 
     # ── S1 — PATIENT ──
     section_hdr("I.   INFORMATIONS DU PATIENT")
-    data_row("Nom",             nom.upper(),  "Prenom",           prenom.upper())
-    data_row("Age",             f"{age} ans", "Heredite Cardiaque", family, shade=True)
+    data_row("Nom",  nom_pdf,       "Prenom",             prenom_pdf)
+    data_row("Age",  f"{age} ans",  "Heredite Cardiaque", family_pdf, shade=True)
     pdf.ln(5)
 
     # ── S2 — CLINIQUE ──
     section_hdr("II.  DONNEES CLINIQUES")
     data_row("Tension Arterielle", f"{sys_bp}/{dia_bp} mmHg", "Cholesterol", f"{chol} mg/dL")
-    data_row("Pouls",              f"{pulse} BPM",            "Tabagisme",   smoke, shade=True)
+    data_row("Pouls",              f"{pulse} BPM",             "Tabagisme",   smoke_pdf, shade=True)
     pdf.ln(5)
 
     # ── S3 — MODE DE VIE ──
     section_hdr("III. MODE DE VIE & HABITUDES")
-    data_row("Pas / Jour",           str(steps),          "Sommeil",             f"{sleep} h/nuit")
-    data_row("Niveau de Stress",     f"{stress} / 10",    "Qualite Alimentaire", f"{diet} / 10", shade=True)
-    data_row("Alcool",               f"{alcohol} v/sem.", "",                    "")
+    data_row("Pas / Jour",       str(steps),         "Sommeil",             f"{sleep} h/nuit")
+    data_row("Niveau de Stress", f"{stress} / 10",   "Qualite Alimentaire", f"{diet} / 10", shade=True)
+    data_row("Alcool",           f"{alcohol} v/sem.", "",                   "")
     pdf.ln(5)
 
     # ── S4 — RESULTAT IA ──
@@ -544,17 +567,23 @@ if submitted:
     risk_borders = {0: (40, 199, 111),  1: (220, 155, 0),   2: (200, 16, 46)}
     risk_texts   = {0: (15, 110, 60),   1: (130, 85, 0),    2: (155, 10, 28)}
 
-    rf = risk_fills[res_idx]; rb = risk_borders[res_idx]; rt = risk_texts[res_idx]
+    rf = risk_fills[res_idx]
+    rb = risk_borders[res_idx]
+    rt = risk_texts[res_idx]
 
     y0 = pdf.get_y()
-    pdf.set_fill_color(*rf); pdf.set_draw_color(*rb); pdf.set_line_width(1.2)
+    pdf.set_fill_color(*rf)
+    pdf.set_draw_color(*rb)
+    pdf.set_line_width(1.2)
     pdf.rect(10, y0, 190, 28, 'FD')
 
-    pdf.set_font("Arial", 'B', 17); pdf.set_text_color(*rt)
+    pdf.set_font("Arial", 'B', 17)
+    pdf.set_text_color(*rt)
     pdf.set_y(y0 + 5)
-    pdf.cell(210, 9, f"{cats[res_idx]}   |   Score IA : {risk_score:.1f}%", align='C', ln=True)
-    pdf.set_font("Arial", 'I', 8.5); pdf.set_text_color(70, 85, 110)
-    pdf.cell(210, 7, f"Patient : {prenom.upper()} {nom.upper()}   |   Age : {age} ans", align='C', ln=True)
+    pdf.cell(210, 9, f"{cats_pdf[res_idx]}   |   Score IA : {risk_score:.1f}%", align='C', ln=True)
+    pdf.set_font("Arial", 'I', 8.5)
+    pdf.set_text_color(70, 85, 110)
+    pdf.cell(210, 7, f"Patient : {prenom_pdf} {nom_pdf}   |   Age : {age} ans", align='C', ln=True)
     pdf.ln(5)
 
     # probability bars
@@ -562,12 +591,18 @@ if submitted:
     bar_col = [(40, 199, 111), (220, 155, 0), (200, 16, 46)]
     for i, (lbl, prob) in enumerate(zip(cat_lbl, proba)):
         yb = pdf.get_y()
-        pdf.set_font("Arial", '', 8); pdf.set_text_color(70, 90, 120)
-        pdf.set_x(14); pdf.cell(48, 8, lbl)
-        pdf.set_fill_color(225, 234, 246); pdf.rect(62, yb+2, 118, 4, 'F')
-        pdf.set_fill_color(*bar_col[i]);   pdf.rect(62, yb+2, int(prob*118), 4, 'F')
-        pdf.set_font("Arial", 'B', 8); pdf.set_text_color(11, 31, 58)
-        pdf.set_x(184); pdf.cell(22, 8, f"{prob*100:.1f}%", align='R')
+        pdf.set_font("Arial", '', 8)
+        pdf.set_text_color(70, 90, 120)
+        pdf.set_x(14)
+        pdf.cell(48, 8, lbl)
+        pdf.set_fill_color(225, 234, 246)
+        pdf.rect(62, yb+2, 118, 4, 'F')
+        pdf.set_fill_color(*bar_col[i])
+        pdf.rect(62, yb+2, int(prob*118), 4, 'F')
+        pdf.set_font("Arial", 'B', 8)
+        pdf.set_text_color(11, 31, 58)
+        pdf.set_x(184)
+        pdf.cell(22, 8, f"{prob*100:.1f}%", align='R')
         pdf.ln(8)
     pdf.ln(4)
 
@@ -577,7 +612,7 @@ if submitted:
     reco_titre = {
         0: "Profil Cardiovasculaire Optimal",
         1: "Vigilance Cardiovasculaire Requise",
-        2: "ALERTE — Risque Cardiaque Eleve Detecte"
+        2: "ALERTE - Risque Cardiaque Eleve Detecte"
     }
     reco_corps = {
         0: ("L'analyse par intelligence artificielle indique un profil cardiaque favorable. "
@@ -596,67 +631,76 @@ if submitted:
     }
 
     yr = pdf.get_y()
-    pdf.set_fill_color(*rf); pdf.set_draw_color(*rb); pdf.set_line_width(0.5)
-    pdf.set_font("Arial", 'B', 9.5); pdf.set_text_color(*rt)
-    pdf.set_x(14); pdf.multi_cell(182, 8, reco_titre[res_idx])
-    pdf.set_font("Arial", '', 8.5); pdf.set_text_color(38, 52, 72)
-    pdf.set_x(14); pdf.multi_cell(182, 6, reco_corps[res_idx])
+    pdf.set_fill_color(*rf)
+    pdf.set_draw_color(*rb)
+    pdf.set_line_width(0.5)
+    pdf.set_font("Arial", 'B', 9.5)
+    pdf.set_text_color(*rt)
+    pdf.set_x(14)
+    pdf.multi_cell(182, 8, safe(reco_titre[res_idx]))
+    pdf.set_font("Arial", '', 8.5)
+    pdf.set_text_color(38, 52, 72)
+    pdf.set_x(14)
+    pdf.multi_cell(182, 6, safe(reco_corps[res_idx]))
     pdf.rect(10, yr, 190, pdf.get_y() - yr + 2, 'D')
     pdf.ln(5)
 
     # ── S6 — SIGNATURE ──
     section_hdr("VI.  VALIDATION & SIGNATURE MEDICALE")
     ys = pdf.get_y()
-    pdf.set_fill_color(244, 248, 254); pdf.set_draw_color(210, 222, 238)
-    pdf.set_line_width(0.2); pdf.rect(10, ys, 190, 28, 'FD')
+    pdf.set_fill_color(244, 248, 254)
+    pdf.set_draw_color(210, 222, 238)
+    pdf.set_line_width(0.2)
+    pdf.rect(10, ys, 190, 28, 'FD')
     pdf.set_y(ys + 4)
-    pdf.set_font("Arial", '', 8); pdf.set_text_color(80, 100, 130)
-    pdf.set_x(14); pdf.cell(90, 6, "Medecin / Cardiologue Responsable :", ln=False)
-    pdf.set_x(120); pdf.cell(80, 6, "Cachet & Signature :", ln=True)
+    pdf.set_font("Arial", '', 8)
+    pdf.set_text_color(80, 100, 130)
+    pdf.set_x(14)
+    pdf.cell(90, 6, "Medecin / Cardiologue Responsable :", ln=False)
+    pdf.set_x(120)
+    pdf.cell(80, 6, "Cachet & Signature :", ln=True)
     pdf.set_draw_color(46, 109, 164)
     pdf.set_line_width(0.4)
     pdf.line(14, pdf.get_y() + 11, 104, pdf.get_y() + 11)
     pdf.line(120, pdf.get_y() + 11, 200, pdf.get_y() + 11)
     pdf.ln(18)
-    pdf.set_font("Arial", 'I', 7); pdf.set_text_color(140, 155, 175)
+    pdf.set_font("Arial", 'I', 7)
+    pdf.set_text_color(140, 155, 175)
     pdf.set_x(14)
-    pdf.cell(182, 6, f"Ce rapport est genere electroniquement le {heure_pdf}  —  Ref. {ref_num}", align='C', ln=True)
+    pdf.cell(182, 6, f"Ce rapport est genere electroniquement le {heure_pdf}  --  Ref. {ref_num}", align='C', ln=True)
 
     # ── FOOTER BAND ──
     pdf.set_y(-18)
-    pdf.set_fill_color(11, 31, 58); pdf.rect(0, pdf.get_y()-1, 210, 22, 'F')
-    pdf.set_fill_color(184, 151, 42); pdf.rect(0, pdf.get_y()-1, 210, 0.8, 'F')
-    pdf.set_font("Arial", '', 7.5); pdf.set_text_color(100, 140, 180)
+    pdf.set_fill_color(11, 31, 58)
+    pdf.rect(0, pdf.get_y()-1, 210, 22, 'F')
+    pdf.set_fill_color(184, 151, 42)
+    pdf.rect(0, pdf.get_y()-1, 210, 0.8, 'F')
+    pdf.set_font("Arial", '', 7.5)
+    pdf.set_text_color(100, 140, 180)
     pdf.set_y(pdf.get_y() + 3)
     pdf.cell(95, 6, "  CardioIA Pro  |  Laboratoire de Cardiologie  |  Algerie", align='L')
     pdf.cell(95, 6, f"Page 1 / 1   |   {ref_num}  ", align='R')
 
-# --- NETTOYAGE DES CARACTÈRES SPÉCIAUX POUR FPDF ---
-# On remplace les symboles non-compatibles (comme le cœur) par du texte simple ou on les ignore
-nom_clean = nom.upper().replace("♥", "").replace("♡", "")
-prenom_clean = prenom.upper().replace("♥", "").replace("♡", "")
+    # ── OUTPUT SAFE ──
+    try:
+        pdf_output = pdf.output(dest='S')
+        if isinstance(pdf_output, str):
+            pdf_bytes = pdf_output.encode('latin-1', 'ignore')
+        else:
+            pdf_bytes = bytes(pdf_output)
+    except Exception as e:
+        st.error(f"Erreur generation PDF: {e}")
+        pdf_bytes = b""
 
-# ... (code précédent de génération du PDF)
+    if pdf_bytes:
+        st.download_button(
+            label="Telecharger le Bilan PDF Professionnel",
+            data=pdf_bytes,
+            file_name=f"CardioIA_Bilan_{safe(nom)}_{safe(prenom)}_{now.strftime('%Y%m%d')}.pdf",
+            mime="application/pdf"
+        )
 
-    # 1. Génération sécurisée des bytes du PDF
-    # On utilise 'ignore' pour que les caractères spéciaux ne fassent pas planter le script
-pdf_output = pdf.output(dest='S')
-if isinstance(pdf_output, str):
-        pdf_bytes = pdf_output.encode('latin-1', 'ignore')
-else:
-        pdf_bytes = bytes(pdf_output)
-
-    # 2. Le bouton de téléchargement (BIEN ALIGNÉ)
-st.download_button(
-        label="♥  Télécharger le Bilan PDF Professionnel",
-        data=pdf_bytes,
-        file_name=f"CardioIA_Bilan_{nom}_{prenom}_{now.strftime('%Y%m%d')}.pdf",
-        mime="application/pdf"
-    )
-
-# --- FIN DU BLOC IF SUBMITTED ---
-
-# ── AUTO-REFRESH CLOCK (Hors du bloc if) ──
+# ── AUTO-REFRESH CLOCK ──
 time.sleep(1)
 show_clock()
 st.rerun()
