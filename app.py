@@ -640,7 +640,7 @@ prenom_clean = prenom.upper().replace("♥", "").replace("♡", "")
 
     # 1. Génération sécurisée des bytes du PDF
     # On utilise 'ignore' pour que les caractères spéciaux ne fassent pas planter le script
-    pdf_output = pdf.output(dest='S')
+pdf_output = pdf.output(dest='S')
     if isinstance(pdf_output, str):
         pdf_bytes = pdf_output.encode('latin-1', 'ignore')
     else:
