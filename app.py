@@ -641,13 +641,13 @@ prenom_clean = prenom.upper().replace("♥", "").replace("♡", "")
     # 1. Génération sécurisée des bytes du PDF
     # On utilise 'ignore' pour que les caractères spéciaux ne fassent pas planter le script
 pdf_output = pdf.output(dest='S')
-    if isinstance(pdf_output, str):
+if isinstance(pdf_output, str):
         pdf_bytes = pdf_output.encode('latin-1', 'ignore')
-    else:
+else:
         pdf_bytes = bytes(pdf_output)
 
     # 2. Le bouton de téléchargement (BIEN ALIGNÉ)
-    st.download_button(
+st.download_button(
         label="♥  Télécharger le Bilan PDF Professionnel",
         data=pdf_bytes,
         file_name=f"CardioIA_Bilan_{nom}_{prenom}_{now.strftime('%Y%m%d')}.pdf",
