@@ -631,7 +631,26 @@ if submitted:
     pdf.cell(95, 6, "  CardioIA Pro  |  Laboratoire de Cardiologie  |  Algerie", align='L')
     pdf.cell(95, 6, f"Page 1 / 1   |   {ref_num}  ", align='R')
 
+# --- NETTOYAGE DES CARACTÈRES SPÉCIAUX POUR FPDF ---
+# On remplace les symboles non-compatibles (comme le cœur) par du texte simple ou on les ignore
+nom_clean = nom.upper().replace("♥", "").replace("♡", "")
+prenom_clean = prenom.upper().replace("♥", "").replace("♡", "")
+
+# --- MISE À JOUR DU PDF ---
+# Assurez-vous d'utiliser nom_clean et prenom_clean dans vos fonctions pdf (data_row, etc.)
+# Exemple de correction de la ligne finale :
+try:
     pdf_bytes = pdf.output(dest='S').encode('latin-1', 'ignore')
+except UnicodeEncodeError:
+    # Si l'erreur persiste malgré tout, on force l'encodage en ignorant les fautifs
+    pdf_bytes = pdf.output(dest='S').encode('latin-1', 'ignore')
+
+st.download_button(
+    "♥  Télécharger le Bilan PDF Professionnel",
+    data=pdf_bytes,
+    file_name=f"CardioIA_Bilan_{nom_clean}_{prenom_clean}_{now.strftime('%Y%m%d')}.pdf",
+    mime="application/pdf"
+)
 
     st.download_button(
         "♥  Télécharger le Bilan PDF Professionnel",
