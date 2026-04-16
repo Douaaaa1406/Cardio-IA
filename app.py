@@ -5,346 +5,393 @@ import numpy as np
 from fpdf import FPDF
 from datetime import datetime
 import pytz
+import time
 
 # --- CONFIGURATION ---
 st.set_page_config(page_title="CardioIA Pro", layout="wide", page_icon="🫀")
 
-# Heure Algerie
-timezone_dz = pytz.timezone('Africa/Algiers')
-heure_algerie = datetime.now(timezone_dz).strftime("%d/%m/%Y %H:%M:%S")
-
-# --- DESIGN PRO BLEU IA & CARDIAQUE ---
+# --- LIGHT ELEGANT THEME ---
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@700;900&display=swap');
 
     :root {
-        --navy: #020B18;
-        --deep: #041525;
-        --panel: #071E35;
-        --card: #0A2540;
-        --border: #0E3A5E;
-        --accent: #00A8FF;
-        --glow: #00D4FF;
-        --red: #FF2D55;
-        --green: #00E676;
-        --amber: #FFB300;
-        --text: #C8E6FA;
-        --muted: #6A95B0;
+        --cream: #F8F5F0;
+        --white: #FFFFFF;
+        --light-gray: #F2EEE9;
+        --border: #D8CFC4;
+        --soft: #EBE5DC;
+        --navy: #0B1F3A;
+        --blue-mid: #1A3A5C;
+        --blue-light: #2E6DA4;
+        --accent: #C8102E;
+        --text-dark: #1A1A2E;
+        --text-mid: #3D4A5C;
+        --text-muted: #8A97A8;
+        --gold: #B8972A;
     }
 
-    /* ── ROOT ── */
     .stApp {
-        background: var(--navy);
-        font-family: 'Rajdhani', sans-serif;
+        background: var(--cream);
+        font-family: 'Montserrat', sans-serif;
     }
 
-    /* ECG animated line */
-    .ecg-header {
-        background: linear-gradient(135deg, #020B18 0%, #041525 50%, #061D33 100%);
-        border-bottom: 2px solid var(--accent);
-        padding: 28px 40px 20px;
-        position: relative;
+    /* FLOATING HEARTS */
+    .hearts-bg {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        pointer-events: none;
+        z-index: 0;
         overflow: hidden;
     }
-    .ecg-header::before {
-        content: '';
+    .heart-float {
         position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='60'%3E%3Cpolyline points='0,30 60,30 70,30 80,10 90,50 100,30 120,30 180,30 190,30 200,5 210,55 220,30 250,30 310,30 320,30 330,10 340,50 350,30 380,30 440,30 450,30 460,5 470,55 480,30 600,30' fill='none' stroke='%2300A8FF' stroke-width='1.5' opacity='0.18'/%3E%3C/svg%3E") repeat-x center;
-        animation: ecgMove 4s linear infinite;
+        bottom: -60px;
+        font-size: 18px;
+        opacity: 0;
+        animation: floatUp linear infinite;
+        color: #C8102E;
     }
-    @keyframes ecgMove {
-        from { background-position: 0 center; }
-        to { background-position: 600px center; }
+    .heart-float:nth-child(1)  { left: 5%;  animation-duration: 13s; animation-delay: 0s;   font-size: 14px; }
+    .heart-float:nth-child(2)  { left: 13%; animation-duration: 16s; animation-delay: 2s;   font-size: 20px; }
+    .heart-float:nth-child(3)  { left: 22%; animation-duration: 11s; animation-delay: 4s;   font-size: 11px; }
+    .heart-float:nth-child(4)  { left: 33%; animation-duration: 14s; animation-delay: 1s;   font-size: 16px; }
+    .heart-float:nth-child(5)  { left: 45%; animation-duration: 13s; animation-delay: 6s;   font-size: 22px; }
+    .heart-float:nth-child(6)  { left: 55%; animation-duration: 17s; animation-delay: 3s;   font-size: 10px; }
+    .heart-float:nth-child(7)  { left: 65%; animation-duration: 12s; animation-delay: 5s;   font-size: 18px; }
+    .heart-float:nth-child(8)  { left: 76%; animation-duration: 15s; animation-delay: 7s;   font-size: 14px; }
+    .heart-float:nth-child(9)  { left: 85%; animation-duration: 10s; animation-delay: 2s;   font-size: 20px; }
+    .heart-float:nth-child(10) { left: 93%; animation-duration: 14s; animation-delay: 9s;   font-size: 13px; }
+    .heart-float:nth-child(11) { left: 18%; animation-duration: 18s; animation-delay: 11s;  font-size: 16px; }
+    .heart-float:nth-child(12) { left: 38%; animation-duration: 15s; animation-delay: 8s;   font-size: 9px; }
+
+    @keyframes floatUp {
+        0%   { transform: translateY(0) rotate(-12deg); opacity: 0; }
+        8%   { opacity: 0.20; }
+        92%  { opacity: 0.10; }
+        100% { transform: translateY(-115vh) rotate(12deg); opacity: 0; }
     }
 
-    /* ── HEADER TITLE ── */
-    .main-title {
-        font-family: 'Orbitron', sans-serif;
-        font-size: 2.2rem;
+    /* HEADER */
+    .main-header {
+        background: linear-gradient(135deg, #0B1F3A 0%, #1A3A5C 55%, #1E4976 100%);
+        border-radius: 20px;
+        padding: 36px 40px 28px;
+        margin-bottom: 24px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 50px rgba(11,31,58,0.22);
+    }
+    .main-header::before {
+        content: '♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥';
+        position: absolute;
+        top: 9px; left: 0; right: 0;
+        font-size: 10px; color: rgba(255,255,255,0.07);
+        letter-spacing: 6px; text-align: center; font-family: serif;
+    }
+    .main-header::after {
+        content: '♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡  ♥  ♡';
+        position: absolute;
+        bottom: 9px; left: 0; right: 0;
+        font-size: 10px; color: rgba(255,255,255,0.07);
+        letter-spacing: 6px; text-align: center; font-family: serif;
+    }
+    .header-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.55rem;
         font-weight: 900;
-        color: var(--accent);
+        color: #FFFFFF;
+        text-align: center;
+        letter-spacing: 2px;
+        text-shadow: 0 2px 20px rgba(255,255,255,0.12);
+        margin: 0;
+        position: relative; z-index: 1;
+    }
+    .header-subtitle {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.73rem;
+        color: rgba(255,255,255,0.50);
         text-align: center;
         letter-spacing: 4px;
         text-transform: uppercase;
-        text-shadow: 0 0 30px rgba(0,168,255,0.6), 0 0 60px rgba(0,168,255,0.2);
-        margin: 0;
-        position: relative;
-        z-index: 1;
+        margin-top: 10px;
+        font-weight: 300;
+        position: relative; z-index: 1;
     }
-    .sub-title {
-        font-family: 'Share Tech Mono', monospace;
-        font-size: 0.82rem;
-        color: var(--muted);
-        text-align: center;
-        letter-spacing: 3px;
-        margin-top: 8px;
-        position: relative;
-        z-index: 1;
-    }
-    .heart-icon {
-        font-size: 2.4rem;
-        animation: heartbeat 1.2s ease-in-out infinite;
+    .beat-heart {
+        font-size: 2.6rem;
         display: inline-block;
+        animation: heartbeat 1.3s ease-in-out infinite;
+        filter: drop-shadow(0 0 14px rgba(220,50,70,0.85));
     }
     @keyframes heartbeat {
-        0%, 100% { transform: scale(1); }
-        14% { transform: scale(1.25); }
-        28% { transform: scale(1); }
-        42% { transform: scale(1.15); }
-        70% { transform: scale(1); }
+        0%   { transform: scale(1.0); }
+        14%  { transform: scale(1.32); }
+        28%  { transform: scale(1.0); }
+        42%  { transform: scale(1.18); }
+        70%  { transform: scale(1.0); }
+        100% { transform: scale(1.0); }
     }
 
-    /* ── STATUS BAR ── */
-    .status-bar {
-        background: var(--deep);
+    /* CLOCK BAR */
+    .clock-bar {
+        background: var(--white);
         border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 10px 20px;
-        margin: 18px 0 22px;
+        border-radius: 50px;
+        padding: 11px 30px;
+        margin-bottom: 24px;
         display: flex;
         align-items: center;
-        gap: 12px;
-        font-family: 'Share Tech Mono', monospace;
-        font-size: 0.78rem;
-        color: var(--accent);
+        justify-content: space-between;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.06);
     }
-    .status-dot {
+    .clock-left {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.70rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .clock-dot {
         width: 8px; height: 8px;
-        background: var(--green);
+        background: #28C76F;
         border-radius: 50%;
-        box-shadow: 0 0 10px var(--green);
-        animation: pulse-dot 2s ease-in-out infinite;
+        box-shadow: 0 0 10px #28C76F;
+        animation: blink 1s ease-in-out infinite;
+        display: inline-block;
     }
-    @keyframes pulse-dot {
+    @keyframes blink {
         0%, 100% { opacity: 1; }
-        50% { opacity: 0.4; }
+        50% { opacity: 0.3; }
+    }
+    .clock-time {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: var(--navy);
+        letter-spacing: 3px;
+    }
+    .clock-right {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.70rem;
+        color: var(--text-muted);
+        letter-spacing: 1px;
     }
 
-    /* ── SECTION HEADERS ── */
-    .section-header {
-        font-family: 'Orbitron', sans-serif;
-        font-size: 0.72rem;
+    /* SECTION LABELS */
+    .section-label {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.66rem;
         font-weight: 700;
-        color: var(--accent);
         letter-spacing: 3px;
         text-transform: uppercase;
-        padding: 8px 14px;
-        background: linear-gradient(90deg, rgba(0,168,255,0.15) 0%, transparent 100%);
-        border-left: 3px solid var(--accent);
-        border-radius: 0 6px 6px 0;
-        margin-bottom: 18px;
+        color: var(--blue-light);
+        border-bottom: 2px solid var(--soft);
+        padding-bottom: 10px;
+        margin-bottom: 16px;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .section-label::before { content: '♥'; color: var(--accent); font-size: 11px; }
+
+    /* INPUTS */
+    input[type="number"], input[type="text"],
+    div[data-baseweb="input"] input, textarea {
+        background: var(--light-gray) !important;
+        border: 1.5px solid var(--border) !important;
+        border-radius: 10px !important;
+        color: var(--text-dark) !important;
+        font-family: 'Montserrat', sans-serif !important;
+        font-weight: 500 !important;
+        font-size: 0.92rem !important;
+        transition: all 0.2s !important;
+    }
+    input:focus {
+        border-color: var(--blue-light) !important;
+        background: var(--white) !important;
+        box-shadow: 0 0 0 3px rgba(46,109,164,0.12) !important;
     }
 
-    /* ── INPUTS ── */
-    input[type="number"],
-    input[type="text"],
-    div[data-baseweb="input"] input,
-    div[data-baseweb="textarea"] textarea {
-        background: var(--panel) !important;
-        border: 1px solid var(--border) !important;
-        color: var(--text) !important;
-        border-radius: 6px !important;
-        font-family: 'Rajdhani', sans-serif !important;
-        font-size: 1rem !important;
-        font-weight: 600 !important;
-        transition: border-color 0.2s, box-shadow 0.2s !important;
-    }
-    input:focus, div[data-baseweb="input"]:focus-within input {
-        border-color: var(--accent) !important;
-        box-shadow: 0 0 12px rgba(0,168,255,0.25) !important;
-        outline: none !important;
-    }
-
-    /* ── SELECT ── */
+    /* SELECT */
     div[data-baseweb="select"] > div {
-        background: var(--panel) !important;
-        border: 1px solid var(--border) !important;
-        border-radius: 6px !important;
-        color: var(--text) !important;
+        background: var(--light-gray) !important;
+        border: 1.5px solid var(--border) !important;
+        border-radius: 10px !important;
     }
     div[data-baseweb="select"] span {
-        color: var(--text) !important;
-        font-family: 'Rajdhani', sans-serif !important;
-        font-weight: 600 !important;
+        color: var(--text-dark) !important;
+        font-family: 'Montserrat', sans-serif !important;
+        font-weight: 500 !important;
     }
 
-    /* ── LABELS ── */
-    label, .stTextInput label, .stNumberInput label, .stSelectbox label,
-    .stSlider label, .stRadio label {
-        color: var(--muted) !important;
-        font-family: 'Rajdhani', sans-serif !important;
-        font-size: 0.82rem !important;
+    /* LABELS */
+    label, .stTextInput label, .stNumberInput label,
+    .stSelectbox label, .stSlider label, .stRadio label {
+        color: var(--text-mid) !important;
+        font-family: 'Montserrat', sans-serif !important;
+        font-size: 0.72rem !important;
         font-weight: 600 !important;
         letter-spacing: 1.5px !important;
         text-transform: uppercase !important;
     }
-
-    /* ── SLIDER ── */
-    .stSlider > div > div > div[data-testid="stThumbValue"],
-    .stSlider [data-testid="stThumbValue"] {
-        color: var(--accent) !important;
-        font-weight: 700 !important;
-    }
-    .stSlider [role="slider"] {
-        background: var(--accent) !important;
-        box-shadow: 0 0 10px var(--accent) !important;
-    }
-
-    /* ── RADIO ── */
     .stRadio [data-testid="stMarkdownContainer"] p {
-        color: var(--text) !important;
-        font-family: 'Rajdhani', sans-serif !important;
-        font-weight: 600 !important;
+        color: var(--text-dark) !important;
+        font-family: 'Montserrat', sans-serif !important;
+        font-weight: 500 !important;
+        font-size: 0.88rem !important;
     }
 
-    /* ── FORM SUBMIT BUTTON ── */
+    /* SUBMIT BUTTON */
     .stButton > button {
-        background: linear-gradient(135deg, #003F7F 0%, #0066CC 50%, #0088FF 100%) !important;
+        background: linear-gradient(135deg, #0B1F3A 0%, #1A3A5C 50%, #2E6DA4 100%) !important;
         color: white !important;
-        font-family: 'Orbitron', sans-serif !important;
+        font-family: 'Montserrat', sans-serif !important;
         font-weight: 700 !important;
-        font-size: 0.85rem !important;
+        font-size: 0.80rem !important;
         letter-spacing: 3px !important;
-        padding: 16px 32px !important;
-        border-radius: 8px !important;
-        border: 1px solid var(--accent) !important;
+        padding: 18px 36px !important;
+        border-radius: 50px !important;
+        border: none !important;
         width: 100% !important;
         text-transform: uppercase !important;
-        box-shadow: 0 0 25px rgba(0,168,255,0.3), inset 0 1px 0 rgba(255,255,255,0.1) !important;
+        box-shadow: 0 8px 30px rgba(11,31,58,0.28) !important;
         transition: all 0.3s ease !important;
-        cursor: pointer !important;
     }
     .stButton > button:hover {
-        box-shadow: 0 0 40px rgba(0,168,255,0.6), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+        transform: translateY(-3px) !important;
+        box-shadow: 0 14px 40px rgba(11,31,58,0.40) !important;
+    }
+
+    /* DOWNLOAD BUTTON */
+    .stDownloadButton > button {
+        background: var(--white) !important;
+        color: var(--navy) !important;
+        font-family: 'Montserrat', sans-serif !important;
+        font-weight: 700 !important;
+        font-size: 0.78rem !important;
+        letter-spacing: 2px !important;
+        border: 2px solid var(--navy) !important;
+        border-radius: 50px !important;
+        padding: 16px 32px !important;
+        width: 100% !important;
+        box-shadow: 0 4px 20px rgba(11,31,58,0.10) !important;
+        transition: all 0.3s !important;
+    }
+    .stDownloadButton > button:hover {
+        background: var(--navy) !important;
+        color: white !important;
         transform: translateY(-2px) !important;
     }
 
-    /* ── DOWNLOAD BUTTON ── */
-    .stDownloadButton > button {
-        background: linear-gradient(135deg, #1A1A2E 0%, #162447 100%) !important;
-        color: var(--accent) !important;
-        font-family: 'Orbitron', sans-serif !important;
-        font-size: 0.75rem !important;
-        letter-spacing: 2px !important;
-        border: 1px solid var(--accent) !important;
-        border-radius: 8px !important;
-        padding: 14px 28px !important;
-        width: 100% !important;
-        box-shadow: 0 0 20px rgba(0,168,255,0.2) !important;
-    }
-
-    /* ── RESULT CARD ── */
-    .result-low {
-        background: linear-gradient(135deg, rgba(0,230,118,0.12), rgba(0,230,118,0.05));
-        border: 2px solid var(--green);
-        box-shadow: 0 0 30px rgba(0,230,118,0.2), inset 0 0 30px rgba(0,230,118,0.05);
-    }
-    .result-medium {
-        background: linear-gradient(135deg, rgba(255,179,0,0.12), rgba(255,179,0,0.05));
-        border: 2px solid var(--amber);
-        box-shadow: 0 0 30px rgba(255,179,0,0.2), inset 0 0 30px rgba(255,179,0,0.05);
-    }
-    .result-high {
-        background: linear-gradient(135deg, rgba(255,45,85,0.15), rgba(255,45,85,0.05));
-        border: 2px solid var(--red);
-        box-shadow: 0 0 30px rgba(255,45,85,0.25), inset 0 0 30px rgba(255,45,85,0.05);
-        animation: danger-pulse 2s ease-in-out infinite;
-    }
-    @keyframes danger-pulse {
-        0%, 100% { box-shadow: 0 0 30px rgba(255,45,85,0.25); }
-        50% { box-shadow: 0 0 50px rgba(255,45,85,0.5); }
-    }
-    .result-card {
-        border-radius: 14px;
-        padding: 28px 36px;
+    /* RESULT CARD */
+    .result-wrap {
+        border-radius: 20px;
+        padding: 36px 40px;
         text-align: center;
-        margin: 24px 0;
+        margin: 28px 0;
     }
-    .result-label {
-        font-family: 'Orbitron', sans-serif;
-        font-size: 1.6rem;
-        font-weight: 900;
-        letter-spacing: 4px;
-        text-transform: uppercase;
+    .result-low    { background: linear-gradient(135deg,#E8FAF0,#D0F4E3); border:2px solid #28C76F; box-shadow:0 12px 40px rgba(40,199,111,0.18); }
+    .result-medium { background: linear-gradient(135deg,#FFF8E6,#FFF0C0); border:2px solid #FFB300; box-shadow:0 12px 40px rgba(255,179,0,0.18); }
+    .result-high   { background: linear-gradient(135deg,#FEE8EC,#FDD0D8); border:2px solid #C8102E; box-shadow:0 12px 40px rgba(200,16,46,0.22); animation:result-pulse 2s ease-in-out infinite; }
+    @keyframes result-pulse {
+        0%,100% { box-shadow:0 12px 40px rgba(200,16,46,0.22); }
+        50%     { box-shadow:0 18px 60px rgba(200,16,46,0.42); }
     }
-    .result-score {
-        font-family: 'Share Tech Mono', monospace;
-        font-size: 1.1rem;
-        letter-spacing: 2px;
-        margin-top: 8px;
-        opacity: 0.85;
+    .result-main-label {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem; font-weight: 900; letter-spacing: 2px;
     }
-
-    /* ── FORM CONTAINER ── */
-    div[data-testid="stForm"] {
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        padding: 28px;
-        box-shadow: 0 4px 40px rgba(0,0,0,0.6);
+    .result-score-text {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.95rem; font-weight: 600; letter-spacing: 1px;
+        margin-top: 8px; opacity: 0.82;
+    }
+    .result-patient {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.1rem; color: var(--text-mid);
+        margin-top: 12px; font-style: italic;
     }
 
-    /* ── COLUMNS ── */
-    [data-testid="stHorizontalBlock"] > div {
-        background: var(--card) !important;
+    /* FORM & COLUMNS */
+    div[data-testid="stForm"] { background:transparent; border:none; padding:0; }
+    [data-testid="column"] {
+        background: var(--white) !important;
         border: 1px solid var(--border) !important;
-        border-radius: 12px !important;
-        padding: 20px 18px !important;
-        margin: 0 6px !important;
+        border-radius: 16px !important;
+        padding: 24px 20px !important;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important;
     }
 
-    /* ── SCROLLBAR ── */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--navy); }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-
-    /* ── NUMBER INPUT ARROW ── */
-    button[kind="secondary"] { display: none !important; }
-
-    /* Hide streamlit branding */
+    /* MISC */
     #MainMenu, footer, header { visibility: hidden; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--cream); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--blue-light); }
     </style>
+
+    <div class="hearts-bg">
+        <div class="heart-float">♥</div>
+        <div class="heart-float">♡</div>
+        <div class="heart-float">♥</div>
+        <div class="heart-float">♡</div>
+        <div class="heart-float">♥</div>
+        <div class="heart-float">♡</div>
+        <div class="heart-float">♥</div>
+        <div class="heart-float">♡</div>
+        <div class="heart-float">♥</div>
+        <div class="heart-float">♡</div>
+        <div class="heart-float">♥</div>
+        <div class="heart-float">♡</div>
+    </div>
 """, unsafe_allow_html=True)
 
 
 # ── HEADER ──
 st.markdown("""
-<div class="ecg-header">
-    <div class="main-title">
-        <span class="heart-icon">🫀</span>&nbsp; CardioIA Pro &nbsp;<span class="heart-icon">🫀</span>
+<div class="main-header">
+    <div class="header-title">
+        <span class="beat-heart">🫀</span>&nbsp; CardioIA Pro &nbsp;<span class="beat-heart">🫀</span>
     </div>
-    <div class="sub-title">SYSTÈME EXPERT DE DIAGNOSTIC CARDIAQUE PAR INTELLIGENCE ARTIFICIELLE</div>
+    <div class="header-subtitle">Plateforme de Diagnostic Cardiaque par Intelligence Artificielle</div>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown(f"""
-<div class="status-bar">
-    <div class="status-dot"></div>
-    <span>SYSTÈME EN LIGNE</span>
-    &nbsp;|&nbsp;
-    <span>📍 Laboratoire Cardiologie · Algérie</span>
-    &nbsp;|&nbsp;
-    <span>🕒 {heure_algerie}</span>
-    &nbsp;|&nbsp;
-    <span>🤖 Modèle: XGBoost v2 · Précision: 94.7%</span>
-</div>
-""", unsafe_allow_html=True)
+
+# ── LIVE CLOCK (updates every second via st.rerun) ──
+clock_ph = st.empty()
+
+def show_clock():
+    tz = pytz.timezone('Africa/Algiers')
+    now = datetime.now(tz)
+    date_str = now.strftime("%A %d %B %Y").capitalize()
+    time_str = now.strftime("%H : %M : %S")
+    clock_ph.markdown(f"""
+    <div class="clock-bar">
+        <div class="clock-left">
+            <span class="clock-dot"></span>Heure Algérie — En Direct
+        </div>
+        <div class="clock-time">{time_str}</div>
+        <div class="clock-right">📍 {date_str}</div>
+    </div>
+    """, unsafe_allow_html=True)
+    return now
+
+current_time = show_clock()
 
 
 # ── MODEL ──
 @st.cache_resource
 def train_model():
     df = pd.read_csv("cardiovascular_risk_numeric.csv")
-    mapping = {'Never': 0, 'Former': 1, 'Current': 2}
-    df['smoking_status'] = df['smoking_status'].map(mapping)
+    df['smoking_status'] = df['smoking_status'].map({'Never': 0, 'Former': 1, 'Current': 2})
     X = df.drop(['Patient_ID', 'heart_disease_risk_score', 'risk_category'], axis=1)
     y = df['risk_category']
-    model = xgb.XGBClassifier(n_estimators=100, max_depth=5, learning_rate=0.1)
-    model.fit(X, y)
-    return model, X.columns
+    mdl = xgb.XGBClassifier(n_estimators=100, max_depth=5, learning_rate=0.1)
+    mdl.fit(X, y)
+    return mdl, X.columns
 
 model, feat_cols = train_model()
 
@@ -352,32 +399,29 @@ model, feat_cols = train_model()
 # ── FORM ──
 with st.form("main_form"):
     c1, c2, c3 = st.columns(3)
-
     with c1:
-        st.markdown('<div class="section-header">👤 IDENTITÉ PATIENT</div>', unsafe_allow_html=True)
-        nom = st.text_input("NOM")
-        prenom = st.text_input("PRÉNOM")
-        age = st.number_input("ÂGE (ans)", 10, 110, 45)
-        family = st.radio("HÉRÉDITÉ CARDIAQUE", ["Non", "Oui"])
-
+        st.markdown('<div class="section-label">Identité Patient</div>', unsafe_allow_html=True)
+        nom    = st.text_input("Nom")
+        prenom = st.text_input("Prénom")
+        age    = st.number_input("Âge (ans)", 10, 110, 45)
+        family = st.radio("Hérédité Cardiaque", ["Non", "Oui"])
     with c2:
-        st.markdown('<div class="section-header">🩺 DONNÉES CLINIQUES</div>', unsafe_allow_html=True)
-        sys_bp = st.number_input("TENSION SYSTOLIQUE (mmHg)", 80, 220, 120)
-        dia_bp = st.number_input("TENSION DIASTOLIQUE (mmHg)", 40, 140, 80)
-        chol = st.number_input("CHOLESTÉROL (mg/dL)", 100, 450, 200)
-        pulse = st.number_input("POULS (BPM)", 40, 160, 72)
-
+        st.markdown('<div class="section-label">Données Cliniques</div>', unsafe_allow_html=True)
+        sys_bp = st.number_input("Tension Systolique (mmHg)", 80, 220, 120)
+        dia_bp = st.number_input("Tension Diastolique (mmHg)", 40, 140, 80)
+        chol   = st.number_input("Cholestérol (mg/dL)", 100, 450, 200)
+        pulse  = st.number_input("Pouls (BPM)", 40, 160, 72)
     with c3:
-        st.markdown('<div class="section-header">🏃 MODE DE VIE</div>', unsafe_allow_html=True)
-        smoke = st.selectbox("TABAGISME", ["Jamais", "Ex-fumeur", "Fumeur"])
-        steps = st.number_input("PAS / JOUR", 0, 30000, 5000)
-        sleep = st.slider("SOMMEIL (H/nuit)", 3, 12, 7)
-        stress = st.slider("NIVEAU DE STRESS (1-10)", 1, 10, 5)
-        alcohol = st.number_input("ALCOOL (verres/sem.)", 0, 50, 0)
-        diet = st.slider("QUALITÉ ALIMENTAIRE (1-10)", 1, 10, 7)
+        st.markdown('<div class="section-label">Mode de Vie</div>', unsafe_allow_html=True)
+        smoke   = st.selectbox("Tabagisme", ["Jamais", "Ex-fumeur", "Fumeur"])
+        steps   = st.number_input("Pas / Jour", 0, 30000, 5000)
+        sleep   = st.slider("Sommeil (H/nuit)", 3, 12, 7)
+        stress  = st.slider("Niveau de Stress (1–10)", 1, 10, 5)
+        alcohol = st.number_input("Alcool (verres/sem.)", 0, 50, 0)
+        diet    = st.slider("Qualité Alimentaire (1–10)", 1, 10, 7)
 
     st.markdown("<br>", unsafe_allow_html=True)
-    submitted = st.form_submit_button("⚡  LANCER L'ANALYSE IA — GÉNÉRER LE BILAN")
+    submitted = st.form_submit_button("♥  Lancer l'Analyse IA — Générer le Bilan Cardiaque")
 
 
 # ── RESULTS ──
@@ -388,186 +432,215 @@ if submitted:
           steps, stress, 3, sleep, (1 if family == "Oui" else 0), diet, alcohol]],
         columns=feat_cols
     )
-
-    proba = model.predict_proba(input_data)[0]
+    proba      = model.predict_proba(input_data)[0]
     risk_score = np.max(proba) * 100
-    res_idx = model.predict(input_data)[0]
+    res_idx    = model.predict(input_data)[0]
 
-    cats = ["RISQUE FAIBLE", "RISQUE MODÉRÉ", "RISQUE ÉLEVÉ"]
-    result_classes = ["result-low", "result-medium", "result-high"]
-    result_colors = ["#00E676", "#FFB300", "#FF2D55"]
-    result_emojis = ["✅", "⚠️", "🚨"]
+    cats   = ["RISQUE FAIBLE", "RISQUE MODÉRÉ", "RISQUE ÉLEVÉ"]
+    cls    = ["result-low", "result-medium", "result-high"]
+    colors = ["#28C76F", "#E6A000", "#C8102E"]
+    emojis = ["✅", "⚠️", "🚨"]
 
     st.markdown(f"""
-    <div class="result-card {result_classes[res_idx]}">
-        <div style="color:{result_colors[res_idx]}; font-size:2.6rem; margin-bottom:6px;">{result_emojis[res_idx]}</div>
-        <div class="result-label" style="color:{result_colors[res_idx]};">{cats[res_idx]}</div>
-        <div class="result-score" style="color:{result_colors[res_idx]};">Score de risque : {risk_score:.1f}%</div>
-        <div style="font-family:'Rajdhani',sans-serif; color:#8AAFC0; font-size:0.85rem; margin-top:10px; letter-spacing:1px;">
-            Patient : {prenom.upper()} {nom.upper()} &nbsp;|&nbsp; Âge : {age} ans
-        </div>
+    <div class="result-wrap {cls[res_idx]}">
+        <div style="font-size:2.8rem;margin-bottom:8px;">{emojis[res_idx]}</div>
+        <div class="result-main-label" style="color:{colors[res_idx]};">{cats[res_idx]}</div>
+        <div class="result-score-text" style="color:{colors[res_idx]};">Score de risque IA : {risk_score:.1f}%</div>
+        <div class="result-patient">Patient : {prenom.capitalize()} {nom.upper()} &nbsp;♥&nbsp; Âge : {age} ans</div>
     </div>
     """, unsafe_allow_html=True)
 
-    # ── PDF GENERATION (PRO DESIGN) ──
+    # ── PRO PDF ──
+    tz  = pytz.timezone('Africa/Algiers')
+    now = datetime.now(tz)
+    heure_pdf = now.strftime("%d/%m/%Y  %H:%M:%S")
+    ref_num   = f"CIA-{now.strftime('%Y%m%d%H%M%S')}"
+
     pdf = FPDF()
     pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=18)
 
-    # === HEADER BAND ===
-    pdf.set_fill_color(2, 11, 24)          # navy
-    pdf.rect(0, 0, 210, 42, 'F')
-    pdf.set_fill_color(0, 168, 255)        # accent blue stripe
-    pdf.rect(0, 40, 210, 3, 'F')
+    # ── TOP BAND ──
+    pdf.set_fill_color(11, 31, 58)         # navy
+    pdf.rect(0, 0, 210, 50, 'F')
+    pdf.set_fill_color(46, 109, 164)       # blue stripe
+    pdf.rect(0, 50, 210, 3.5, 'F')
+    pdf.set_fill_color(184, 151, 42)       # gold line
+    pdf.rect(0, 53.5, 210, 0.8, 'F')
 
-    pdf.set_font("Arial", 'B', 22)
-    pdf.set_text_color(0, 168, 255)
+    # Title in band
     pdf.set_y(8)
-    pdf.cell(210, 12, "CARDIO IA PRO", ln=False, align='C')
-    pdf.set_y(20)
-    pdf.set_font("Arial", 'I', 9)
-    pdf.set_text_color(106, 149, 176)
-    pdf.cell(210, 8, "SYSTEME EXPERT DE DIAGNOSTIC CARDIAQUE PAR INTELLIGENCE ARTIFICIELLE", ln=True, align='C')
-    pdf.set_font("Arial", '', 8)
-    pdf.cell(210, 6, f"Laboratoire Cardiologie  |  Algerie  |  {heure_algerie}", ln=True, align='C')
+    pdf.set_font("Arial", 'B', 23)
+    pdf.set_text_color(255, 255, 255)
+    pdf.cell(210, 11, "CARDIO IA PRO", align='C', ln=True)
 
-    pdf.set_y(50)
+    pdf.set_font("Arial", 'I', 8.5)
+    pdf.set_text_color(140, 180, 220)
+    pdf.cell(210, 7, "RAPPORT MEDICAL DE DIAGNOSTIC CARDIAQUE PAR INTELLIGENCE ARTIFICIELLE", align='C', ln=True)
 
-    # === SECTION HELPER ===
-    def section_title(title):
-        pdf.set_fill_color(4, 21, 37)
-        pdf.set_draw_color(0, 168, 255)
+    pdf.set_font("Arial", '', 7.5)
+    pdf.set_text_color(100, 140, 175)
+    pdf.cell(210, 6, f"Laboratoire de Cardiologie  |  Algerie  |  {heure_pdf}", align='C', ln=True)
+
+    pdf.set_font("Arial", '', 7)
+    pdf.set_text_color(80, 115, 155)
+    pdf.cell(180, 6, f"Reference : {ref_num}", align='R', ln=True)
+
+    pdf.set_y(60)
+
+    # ── HELPERS ──
+    def section_hdr(label):
+        pdf.set_fill_color(11, 31, 58)
+        pdf.set_draw_color(46, 109, 164)
         pdf.set_line_width(0.5)
-        pdf.rect(10, pdf.get_y(), 190, 9, 'FD')
-        pdf.set_font("Arial", 'B', 10)
-        pdf.set_text_color(0, 168, 255)
-        pdf.set_x(14)
-        pdf.cell(186, 9, f"  {title}", ln=True)
-        pdf.ln(2)
-
-    def data_row(label1, val1, label2="", val2="", shade=False):
         y = pdf.get_y()
-        if shade:
-            pdf.set_fill_color(10, 37, 64)
-        else:
-            pdf.set_fill_color(7, 30, 53)
-        pdf.rect(10, y, 190, 8, 'F')
-        # left pair
-        pdf.set_font("Arial", '', 8.5)
-        pdf.set_text_color(106, 149, 176)
-        pdf.set_x(14)
-        pdf.cell(38, 8, label1)
-        pdf.set_font("Arial", 'B', 8.5)
-        pdf.set_text_color(200, 230, 250)
-        pdf.cell(52, 8, val1)
-        # right pair
-        if label2:
-            pdf.set_font("Arial", '', 8.5)
-            pdf.set_text_color(106, 149, 176)
-            pdf.cell(38, 8, label2)
-            pdf.set_font("Arial", 'B', 8.5)
-            pdf.set_text_color(200, 230, 250)
-            pdf.cell(52, 8, val2)
-        pdf.ln(8)
+        pdf.rect(10, y, 190, 10, 'FD')
+        pdf.set_font("Arial", 'B', 10)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_x(15)
+        pdf.cell(185, 10, f"  {label}", ln=True)
+        pdf.ln(1)
 
-    # === SECTION 1 — PATIENT ===
-    section_title("1. DONNEES DU PATIENT")
-    data_row("NOM", nom.upper(), "PRENOM", prenom.upper(), shade=False)
-    data_row("AGE", f"{age} ans", "HEREDITE CARD.", family, shade=True)
-    pdf.ln(4)
+    def data_row(l1, v1, l2="", v2="", shade=False):
+        y = pdf.get_y()
+        pdf.set_fill_color(232, 241, 252) if shade else pdf.set_fill_color(244, 248, 254)
+        pdf.set_draw_color(210, 222, 238)
+        pdf.set_line_width(0.15)
+        pdf.rect(10, y, 190, 9, 'FD')
+        pdf.set_font("Arial", '', 8.5);  pdf.set_text_color(80, 100, 130)
+        pdf.set_x(14);  pdf.cell(42, 9, l1)
+        pdf.set_font("Arial", 'B', 8.5); pdf.set_text_color(11, 31, 58)
+        pdf.cell(48, 9, str(v1))
+        if l2:
+            pdf.set_font("Arial", '', 8.5);  pdf.set_text_color(80, 100, 130)
+            pdf.cell(42, 9, l2)
+            pdf.set_font("Arial", 'B', 8.5); pdf.set_text_color(11, 31, 58)
+            pdf.cell(48, 9, str(v2))
+        pdf.ln(9)
 
-    # === SECTION 2 — CLINIQUE ===
-    section_title("2. DONNEES CLINIQUES")
-    data_row("TENSION", f"{sys_bp}/{dia_bp} mmHg", "CHOLESTEROL", f"{chol} mg/dL", shade=False)
-    data_row("POULS", f"{pulse} BPM", "TABAGISME", smoke, shade=True)
-    pdf.ln(4)
+    # ── S1 — PATIENT ──
+    section_hdr("I.   INFORMATIONS DU PATIENT")
+    data_row("Nom",             nom.upper(),  "Prenom",           prenom.upper())
+    data_row("Age",             f"{age} ans", "Heredite Cardiaque", family, shade=True)
+    pdf.ln(5)
 
-    # === SECTION 3 — MODE DE VIE ===
-    section_title("3. MODE DE VIE")
-    data_row("PAS / JOUR", f"{steps}", "SOMMEIL", f"{sleep} h/nuit", shade=False)
-    data_row("STRESS", f"{stress}/10", "QUALITE DIET.", f"{diet}/10", shade=True)
-    data_row("ALCOOL", f"{alcohol} v/sem.", "", "", shade=False)
-    pdf.ln(4)
+    # ── S2 — CLINIQUE ──
+    section_hdr("II.  DONNEES CLINIQUES")
+    data_row("Tension Arterielle", f"{sys_bp}/{dia_bp} mmHg", "Cholesterol", f"{chol} mg/dL")
+    data_row("Pouls",              f"{pulse} BPM",            "Tabagisme",   smoke, shade=True)
+    pdf.ln(5)
 
-    # === SECTION 4 — RESULTAT IA ===
-    section_title("4. ANALYSE ET DECISION DE L'IA")
+    # ── S3 — MODE DE VIE ──
+    section_hdr("III. MODE DE VIE & HABITUDES")
+    data_row("Pas / Jour",           str(steps),          "Sommeil",             f"{sleep} h/nuit")
+    data_row("Niveau de Stress",     f"{stress} / 10",    "Qualite Alimentaire", f"{diet} / 10", shade=True)
+    data_row("Alcool",               f"{alcohol} v/sem.", "",                    "")
+    pdf.ln(5)
 
-    # Result box colored
-    result_fill = {0: (0, 40, 20), 1: (40, 30, 0), 2: (50, 5, 10)}
-    result_border = {0: (0, 200, 100), 1: (220, 160, 0), 2: (220, 40, 60)}
-    result_txt = {0: (0, 230, 118), 1: (255, 179, 0), 2: (255, 50, 80)}
-    rf, rb, rt = result_fill[res_idx], result_border[res_idx], result_txt[res_idx]
+    # ── S4 — RESULTAT IA ──
+    section_hdr("IV.  ANALYSE PAR INTELLIGENCE ARTIFICIELLE")
+
+    risk_fills   = {0: (215, 248, 228), 1: (255, 248, 215), 2: (255, 228, 234)}
+    risk_borders = {0: (40, 199, 111),  1: (220, 155, 0),   2: (200, 16, 46)}
+    risk_texts   = {0: (15, 110, 60),   1: (130, 85, 0),    2: (155, 10, 28)}
+
+    rf = risk_fills[res_idx]; rb = risk_borders[res_idx]; rt = risk_texts[res_idx]
 
     y0 = pdf.get_y()
-    pdf.set_fill_color(*rf)
-    pdf.set_draw_color(*rb)
-    pdf.set_line_width(1)
-    pdf.rect(10, y0, 190, 24, 'FD')
-    pdf.set_font("Arial", 'B', 16)
-    pdf.set_text_color(*rt)
-    pdf.set_y(y0 + 4)
-    pdf.cell(210, 8, f"{cats[res_idx]}   —   Score : {risk_score:.1f}%", ln=True, align='C')
-    pdf.set_font("Arial", '', 9)
-    pdf.set_text_color(200, 220, 235)
-    pdf.cell(210, 6, f"Patient : {prenom.upper()} {nom.upper()}  |  Age : {age} ans", ln=True, align='C')
-    pdf.ln(6)
+    pdf.set_fill_color(*rf); pdf.set_draw_color(*rb); pdf.set_line_width(1.2)
+    pdf.rect(10, y0, 190, 28, 'FD')
 
-    # Probability bars
-    cat_labels = ["Risque Faible", "Risque Modere", "Risque Eleve"]
-    bar_colors = [(0, 200, 100), (220, 160, 0), (220, 50, 70)]
-    pdf.set_font("Arial", '', 8)
-    for i, (lbl, prob) in enumerate(zip(cat_labels, proba)):
-        y_bar = pdf.get_y()
-        pdf.set_text_color(106, 149, 176)
-        pdf.set_x(14)
-        pdf.cell(48, 7, lbl)
-        bar_w = int(prob * 120)
-        pdf.set_fill_color(*bar_colors[i])
-        pdf.rect(62, y_bar + 1.5, bar_w, 4, 'F')
-        pdf.set_text_color(200, 230, 250)
-        pdf.set_x(186)
-        pdf.cell(20, 7, f"{prob*100:.1f}%", align='R')
-        pdf.ln(7)
+    pdf.set_font("Arial", 'B', 17); pdf.set_text_color(*rt)
+    pdf.set_y(y0 + 5)
+    pdf.cell(210, 9, f"{cats[res_idx]}   |   Score IA : {risk_score:.1f}%", align='C', ln=True)
+    pdf.set_font("Arial", 'I', 8.5); pdf.set_text_color(70, 85, 110)
+    pdf.cell(210, 7, f"Patient : {prenom.upper()} {nom.upper()}   |   Age : {age} ans", align='C', ln=True)
+    pdf.ln(5)
+
+    # probability bars
+    cat_lbl = ["Risque Faible", "Risque Modere", "Risque Eleve"]
+    bar_col = [(40, 199, 111), (220, 155, 0), (200, 16, 46)]
+    for i, (lbl, prob) in enumerate(zip(cat_lbl, proba)):
+        yb = pdf.get_y()
+        pdf.set_font("Arial", '', 8); pdf.set_text_color(70, 90, 120)
+        pdf.set_x(14); pdf.cell(48, 8, lbl)
+        pdf.set_fill_color(225, 234, 246); pdf.rect(62, yb+2, 118, 4, 'F')
+        pdf.set_fill_color(*bar_col[i]);   pdf.rect(62, yb+2, int(prob*118), 4, 'F')
+        pdf.set_font("Arial", 'B', 8); pdf.set_text_color(11, 31, 58)
+        pdf.set_x(184); pdf.cell(22, 8, f"{prob*100:.1f}%", align='R')
+        pdf.ln(8)
     pdf.ln(4)
 
-    # === SECTION 5 — RECOMMANDATIONS ===
-    section_title("5. RECOMMANDATIONS MEDICALES")
+    # ── S5 — RECOMMANDATIONS ──
+    section_hdr("V.   RECOMMANDATIONS MEDICALES")
 
-    reco_text = {
-        0: ("Profil optimal detecte.", "Maintenez une alimentation riche en fibres et pratiquez 30 min d'activite physique par jour. Hydratation suffisante recommandee. Bilan cardiaque annuel conseille. Continuez ce mode de vie sain."),
-        1: ("Vigilance requise.", "Reduisez la consommation de sel et de graisses saturees. Augmentez progressivement votre activite physique. Limitez le stress chronique. Un bilan sanguin complet avec lipidogramme est fortement recommande."),
-        2: ("ALERTE CRITIQUE — RISQUE ELEVE DETECTE.", "Une consultation d'urgence chez un cardiologue est imperative. Arretez tout effort physique intense immediatement. Evitez alcool, tabac et aliments gras. Surveillance tensionnelle quotidienne obligatoire.")
+    reco_titre = {
+        0: "Profil Cardiovasculaire Optimal",
+        1: "Vigilance Cardiovasculaire Requise",
+        2: "ALERTE — Risque Cardiaque Eleve Detecte"
+    }
+    reco_corps = {
+        0: ("L'analyse par intelligence artificielle indique un profil cardiaque favorable. "
+            "Poursuivez vos bonnes habitudes de vie : alimentation equilibree riche en fibres, "
+            "activite physique reguliere d'au moins 30 min/jour, hydratation suffisante. "
+            "Bilan cardiaque annuel conseille. Surveillez tension et cholesterol periodiquement."),
+        1: ("Des facteurs de risque moderes ont ete detectes. Reduisez la consommation de sel, "
+            "de graisses saturees et de sucres raffines. Augmentez progressivement l'activite physique "
+            "(150 min/semaine). Limitez l'alcool et gerez le stress chronique. "
+            "Bilan sanguin complet recommande. Consultez votre medecin dans les 4 semaines."),
+        2: ("L'IA identifie un risque cardiovasculaire significativement eleve. "
+            "Consultation urgente chez un cardiologue imperative. Evitez tout effort physique intense. "
+            "Arretez le tabac immediatement, eliminez l'alcool, regime pauvre en sel et graisses. "
+            "Surveillance tensionnelle quotidienne obligatoire. En cas de douleur thoracique, "
+            "essoufflement ou palpitations, contactez les urgences sans delai.")
     }
 
-    reco_title, reco_body = reco_text[res_idx]
-    pdf.set_fill_color(*rf)
-    pdf.set_draw_color(*rb)
-    pdf.set_line_width(0.5)
-    yy = pdf.get_y()
-    # Title line
-    pdf.set_font("Arial", 'B', 9)
-    pdf.set_text_color(*rt)
-    pdf.set_x(14)
-    pdf.multi_cell(182, 8, reco_title)
-    pdf.set_font("Arial", '', 8.5)
-    pdf.set_text_color(200, 230, 250)
-    pdf.set_x(14)
-    pdf.multi_cell(182, 6, reco_body)
-    pdf.rect(10, yy, 190, pdf.get_y() - yy, 'D')
-    pdf.ln(6)
+    yr = pdf.get_y()
+    pdf.set_fill_color(*rf); pdf.set_draw_color(*rb); pdf.set_line_width(0.5)
+    pdf.set_font("Arial", 'B', 9.5); pdf.set_text_color(*rt)
+    pdf.set_x(14); pdf.multi_cell(182, 8, reco_titre[res_idx])
+    pdf.set_font("Arial", '', 8.5); pdf.set_text_color(38, 52, 72)
+    pdf.set_x(14); pdf.multi_cell(182, 6, reco_corps[res_idx])
+    pdf.rect(10, yr, 190, pdf.get_y() - yr + 2, 'D')
+    pdf.ln(5)
 
-    # === FOOTER ===
-    pdf.set_y(-20)
-    pdf.set_fill_color(0, 168, 255)
-    pdf.rect(0, pdf.get_y() - 2, 210, 0.8, 'F')
-    pdf.set_font("Arial", 'I', 7.5)
-    pdf.set_text_color(106, 149, 176)
-    pdf.cell(95, 8, "Document genere electroniquement — CardioIA Pro", align='L')
-    pdf.cell(95, 8, f"Ref: CIA-{datetime.now().strftime('%Y%m%d%H%M%S')}", align='R')
+    # ── S6 — SIGNATURE ──
+    section_hdr("VI.  VALIDATION & SIGNATURE MEDICALE")
+    ys = pdf.get_y()
+    pdf.set_fill_color(244, 248, 254); pdf.set_draw_color(210, 222, 238)
+    pdf.set_line_width(0.2); pdf.rect(10, ys, 190, 28, 'FD')
+    pdf.set_y(ys + 4)
+    pdf.set_font("Arial", '', 8); pdf.set_text_color(80, 100, 130)
+    pdf.set_x(14); pdf.cell(90, 6, "Medecin / Cardiologue Responsable :", ln=False)
+    pdf.set_x(120); pdf.cell(80, 6, "Cachet & Signature :", ln=True)
+    pdf.set_draw_color(46, 109, 164)
+    pdf.set_line_width(0.4)
+    pdf.line(14, pdf.get_y() + 11, 104, pdf.get_y() + 11)
+    pdf.line(120, pdf.get_y() + 11, 200, pdf.get_y() + 11)
+    pdf.ln(18)
+    pdf.set_font("Arial", 'I', 7); pdf.set_text_color(140, 155, 175)
+    pdf.set_x(14)
+    pdf.cell(182, 6, f"Ce rapport est genere electroniquement le {heure_pdf}  —  Ref. {ref_num}", align='C', ln=True)
+
+    # ── FOOTER BAND ──
+    pdf.set_y(-18)
+    pdf.set_fill_color(11, 31, 58); pdf.rect(0, pdf.get_y()-1, 210, 22, 'F')
+    pdf.set_fill_color(184, 151, 42); pdf.rect(0, pdf.get_y()-1, 210, 0.8, 'F')
+    pdf.set_font("Arial", '', 7.5); pdf.set_text_color(100, 140, 180)
+    pdf.set_y(pdf.get_y() + 3)
+    pdf.cell(95, 6, "  CardioIA Pro  |  Laboratoire de Cardiologie  |  Algerie", align='L')
+    pdf.cell(95, 6, f"Page 1 / 1   |   {ref_num}  ", align='R')
 
     pdf_bytes = pdf.output(dest='S').encode('latin-1', 'ignore')
 
     st.download_button(
-        "📥  TÉLÉCHARGER LE BILAN PDF COMPLET",
+        "♥  Télécharger le Bilan PDF Professionnel",
         data=pdf_bytes,
-        file_name=f"CardioIA_Bilan_{nom}_{prenom}_{datetime.now().strftime('%Y%m%d')}.pdf"
+        file_name=f"CardioIA_Bilan_{nom}_{prenom}_{now.strftime('%Y%m%d')}.pdf",
+        mime="application/pdf"
     )
+
+# ── AUTO-REFRESH CLOCK ──
+time.sleep(1)
+show_clock()
+st.rerun()
