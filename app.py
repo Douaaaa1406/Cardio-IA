@@ -636,30 +636,27 @@ if submitted:
 nom_clean = nom.upper().replace("♥", "").replace("♡", "")
 prenom_clean = prenom.upper().replace("♥", "").replace("♡", "")
 
-# --- MISE À JOUR DU PDF ---
-# Assurez-vous d'utiliser nom_clean et prenom_clean dans vos fonctions pdf (data_row, etc.)
-# Exemple de correction de la ligne finale :
-try:
-    pdf_bytes = pdf.output(dest='S').encode('latin-1', 'ignore')
-except UnicodeEncodeError:
-    # Si l'erreur persiste malgré tout, on force l'encodage en ignorant les fautifs
-    pdf_bytes = pdf.output(dest='S').encode('latin-1', 'ignore')
+# ... (code précédent de génération du PDF)
 
-st.download_button(
-    "♥  Télécharger le Bilan PDF Professionnel",
-    data=pdf_bytes,
-    file_name=f"CardioIA_Bilan_{nom_clean}_{prenom_clean}_{now.strftime('%Y%m%d')}.pdf",
-    mime="application/pdf"
-)
+    # 1. Génération sécurisée des bytes du PDF
+    # On utilise 'ignore' pour que les caractères spéciaux ne fassent pas planter le script
+    pdf_output = pdf.output(dest='S')
+    if isinstance(pdf_output, str):
+        pdf_bytes = pdf_output.encode('latin-1', 'ignore')
+    else:
+        pdf_bytes = bytes(pdf_output)
 
+    # 2. Le bouton de téléchargement (BIEN ALIGNÉ)
     st.download_button(
-        "♥  Télécharger le Bilan PDF Professionnel",
+        label="♥  Télécharger le Bilan PDF Professionnel",
         data=pdf_bytes,
         file_name=f"CardioIA_Bilan_{nom}_{prenom}_{now.strftime('%Y%m%d')}.pdf",
         mime="application/pdf"
     )
 
-# ── AUTO-REFRESH CLOCK ──
+# --- FIN DU BLOC IF SUBMITTED ---
+
+# ── AUTO-REFRESH CLOCK (Hors du bloc if) ──
 time.sleep(1)
 show_clock()
 st.rerun()
