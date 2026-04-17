@@ -684,7 +684,7 @@ if submitted:
 
     # ── OUTPUT — BytesIO (seule méthode garantissant un vrai fichier PDF) ──
     buf = io.BytesIO()
-    pdf.output(buf)
+    buf.write(pdf.output(dest='S').encode('latin-1'))
     buf.seek(0)
     pdf_bytes = buf.read()   # toujours des bytes commençant par b'%PDF'
 
