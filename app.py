@@ -7,6 +7,7 @@ from datetime import datetime
 import pytz
 import time
 import unicodedata
+import io
 
 # --- CONFIGURATION ---
 st.set_page_config(page_title="CardioIA Pro", layout="wide", page_icon="🫀")
@@ -681,24 +682,18 @@ if submitted:
     pdf.cell(95, 6, "  CardioIA Pro  |  Laboratoire de Cardiologie  |  Algerie", align='L')
     pdf.cell(95, 6, f"Page 1 / 1   |   {ref_num}  ", align='R')
 
-    # ── OUTPUT SAFE ──
-    try:
-        pdf_output = pdf.output(dest='S')
-        if isinstance(pdf_output, str):
-            pdf_bytes = pdf_output.encode('latin-1', 'ignore')
-        else:
-            pdf_bytes = bytes(pdf_output)
-    except Exception as e:
-        st.error(f"Erreur generation PDF: {e}")
-        pdf_bytes = b""
+    # ── OUTPUT — BytesIO (seule méthode garantissant un vrai fichier PDF) ──
+    buf = io.BytesIO()
+    pdf.output(buf)
+    buf.seek(0)
+    pdf_bytes = buf.read()   # toujours des bytes commençant par b'%PDF'
 
-    if pdf_bytes:
-        st.download_button(
-            label="Telecharger le Bilan PDF Professionnel",
-            data=pdf_bytes,
-            file_name=f"CardioIA_Bilan_{safe(nom)}_{safe(prenom)}_{now.strftime('%Y%m%d')}.pdf",
-            mime="application/pdf"
-        )
+    st.download_button(
+        label="Telecharger le Bilan PDF Professionnel",
+        data=pdf_bytes,
+        file_name=f"CardioIA_Bilan_{safe(nom)}_{safe(prenom)}_{now.strftime('%Y%m%d')}.pdf",
+        mime="application/pdf"
+    )
 
 # ── AUTO-REFRESH CLOCK ──
 time.sleep(1)
