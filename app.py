@@ -684,20 +684,10 @@ if submitted:
 
     # ── OUTPUT — BytesIO (seule méthode garantissant un vrai fichier PDF) ──
   # ── OUTPUT — BytesIO ──
-    # Get the PDF content as a byte-string directly
-    pdf_output = pdf.output(dest='S').encode('latin-1')
-    
-    # Wrap it in a BytesIO object for the download button
-    buf = io.BytesIO(pdf_output)
-    buf.seek(0)
-
-    st.download_button(
-        label="Telecharger le Bilan PDF Professionnel",
-        data=buf,
-        file_name=f"CardioIA_Bilan_{safe(nom)}_{safe(prenom)}_{now.strftime('%Y%m%d')}.pdf",
-        mime="application/pdf"
-    )
-
+   buf = io.BytesIO()
+pdf.output(buf)       # écrit directement dans le buffer mémoire
+buf.seek(0)
+pdf_bytes = buf.read()  # retourne toujours b'%PDF...' — un vrai PDF
 # ── AUTO-REFRESH CLOCK ──
 time.sleep(1)
 show_clock()
