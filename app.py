@@ -683,11 +683,18 @@ if submitted:
     pdf.cell(95, 6, f"Page 1 / 1   |   {ref_num}  ", align='R')
 
     # ── OUTPUT — BytesIO (seule méthode garantissant un vrai fichier PDF) ──
-  # ── OUTPUT — BytesIO ──
-   buf = io.BytesIO()
-pdf.output(buf)       # écrit directement dans le buffer mémoire
-buf.seek(0)
-pdf_bytes = buf.read()  # retourne toujours b'%PDF...' — un vrai PDF
+    buf = io.BytesIO()
+    pdf.output(buf)
+    buf.seek(0)
+    pdf_bytes = buf.read()   # toujours des bytes commençant par b'%PDF'
+
+    st.download_button(
+        label="Telecharger le Bilan PDF Professionnel",
+        data=pdf_bytes,
+        file_name=f"CardioIA_Bilan_{safe(nom)}_{safe(prenom)}_{now.strftime('%Y%m%d')}.pdf",
+        mime="application/pdf"
+    )
+
 # ── AUTO-REFRESH CLOCK ──
 time.sleep(1)
 show_clock()
