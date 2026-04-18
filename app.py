@@ -12,6 +12,16 @@ import io
 # --- CONFIGURATION ---
 st.set_page_config(page_title="CardioIA Pro", layout="wide", page_icon="🫀")
 
+# --- SESSION STATE INIT ---
+if "pdf_bytes" not in st.session_state:
+    st.session_state.pdf_bytes = None
+if "pdf_filename" not in st.session_state:
+    st.session_state.pdf_filename = "bilan.pdf"
+if "show_result" not in st.session_state:
+    st.session_state.show_result = False
+if "result_html" not in st.session_state:
+    st.session_state.result_html = ""
+
 # --- HELPER: strip accents for PDF ---
 def safe(text):
     """Convert any string to latin-1 safe ASCII for FPDF."""
@@ -682,20 +692,24 @@ if submitted:
     pdf.cell(95, 6, "  CardioIA Pro  |  Laboratoire de Cardiologie  |  Algerie", align='L')
     pdf.cell(95, 6, f"Page 1 / 1   |   {ref_num}  ", align='R')
 
-    # ── OUTPUT — BytesIO (seule méthode garantissant un vrai fichier PDF) ──
+    # ── OUTPUT — stocker dans session_state (survit au st.rerun) ──
     buf = io.BytesIO()
-    buf.write(pdf.output(dest='S').encode('latin-1'))
+    pdf.output(buf)
     buf.seek(0)
-    pdf_bytes = buf.read()   # toujours des bytes commençant par b'%PDF'
+    st.session_state.pdf_bytes    = buf.read()
+    st.session_state.pdf_filename = f"CardioIA_Bilan_{safe(nom)}_{safe(prenom)}_{now.strftime('%Y%m%d')}.pdf"
 
+# ── BOUTON DOWNLOAD persistant (hors du bloc if submitted) ──
+if st.session_state.pdf_bytes is not None:
     st.download_button(
         label="Telecharger le Bilan PDF Professionnel",
-        data=pdf_bytes,
-        file_name=f"CardioIA_Bilan_{safe(nom)}_{safe(prenom)}_{now.strftime('%Y%m%d')}.pdf",
-        mime="application/pdf"
+        data=st.session_state.pdf_bytes,
+        file_name=st.session_state.pdf_filename,
+        mime="application/pdf",
+        key="dl_pdf"
     )
 
-# ── AUTO-REFRESH CLOCK ──
+# ── AUTO-REFRESH CLOCK (1 seconde) ──
 time.sleep(1)
 show_clock()
 st.rerun()
