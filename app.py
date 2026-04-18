@@ -692,11 +692,13 @@ if submitted:
     pdf.cell(95, 6, "  CardioIA Pro  |  Laboratoire de Cardiologie  |  Algerie", align='L')
     pdf.cell(95, 6, f"Page 1 / 1   |   {ref_num}  ", align='R')
 
-    # ── OUTPUT — stocker dans session_state (survit au st.rerun) ──
-    buf = io.BytesIO()
-    pdf.output(buf)
-    buf.seek(0)
-    st.session_state.pdf_bytes    = buf.read()
+    # ── OUTPUT — compatible toutes versions FPDF ──
+    raw = pdf.output(dest='S')
+    # dest='S' retourne str (fpdf1) ou bytearray/bytes (fpdf2)
+    if isinstance(raw, (bytearray, bytes)):
+        st.session_state.pdf_bytes = bytes(raw)
+    else:
+        st.session_state.pdf_bytes = raw.encode('latin-1', errors='replace')
     st.session_state.pdf_filename = f"CardioIA_Bilan_{safe(nom)}_{safe(prenom)}_{now.strftime('%Y%m%d')}.pdf"
 
 # ── BOUTON DOWNLOAD persistant (hors du bloc if submitted) ──
