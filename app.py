@@ -683,14 +683,17 @@ if submitted:
     pdf.cell(95, 6, f"Page 1 / 1   |   {ref_num}  ", align='R')
 
     # ── OUTPUT — BytesIO (seule méthode garantissant un vrai fichier PDF) ──
-    buf = io.BytesIO()
-    pdf.output(buf)
+  # ── OUTPUT — BytesIO ──
+    # Get the PDF content as a byte-string directly
+    pdf_output = pdf.output(dest='S').encode('latin-1')
+    
+    # Wrap it in a BytesIO object for the download button
+    buf = io.BytesIO(pdf_output)
     buf.seek(0)
-    pdf_bytes = buf.read()   # toujours des bytes commençant par b'%PDF'
 
     st.download_button(
         label="Telecharger le Bilan PDF Professionnel",
-        data=pdf_bytes,
+        data=buf,
         file_name=f"CardioIA_Bilan_{safe(nom)}_{safe(prenom)}_{now.strftime('%Y%m%d')}.pdf",
         mime="application/pdf"
     )
